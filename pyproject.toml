@@ -1,0 +1,32 @@
+[project]
+name = "swirl_jatmos"
+description = "Swirl-Jatmos is a tool for performing 3D atmospheric large-eddy simulations in a distributed setting on accelerators such as Google's Tensor Processing Units (TPUs) and GPUs."
+readme = "README.md"
+requires-python = ">=3.11"
+version = "0.1"
+license = {file = "LICENSE"}
+authors = [
+  {name = "parkerjeff", email="parkerjeff@google.com"},
+  ]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: Apache Software License",
+    "Intended Audience :: Science/Research",
+]
+keywords = []
+
+dependencies = [
+    "absl-py",
+    "dataclasses-json",
+    "etils",
+    "jax",
+    "netCDF4",
+    "numpy",
+    "orbax",
+    "scipy",
+]
+
+[project.urls]
+homepage = "https://github.com/google-research/swirl-jatmos"
+repository = "https://github.com/google-research/swirl-jatmos"

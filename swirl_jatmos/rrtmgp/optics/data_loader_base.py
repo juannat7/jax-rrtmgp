@@ -23,7 +23,7 @@ import jax
 import jax.numpy as jnp
 import netCDF4 as nc
 import numpy as np
-from swirl_jatmos import types
+from swirl_jatmos import jatmos_types
 
 Array: TypeAlias = jax.Array
 
@@ -82,9 +82,9 @@ def parse_nc_file(
       # datatype to arrays anyway, so skip these data types.
       continue
     if np.issubdtype(val.dtype, np.floating):
-      dtype = types.f_dtype
+      dtype = jatmos_types.f_dtype
     elif np.issubdtype(val.dtype, np.integer):
-      dtype = types.i_dtype
+      dtype = jatmos_types.i_dtype
     else:
       raise ValueError(f'Unexpected dtype: {val.dtype}')
     array_dict[key] = jnp.array(val, dtype=dtype)

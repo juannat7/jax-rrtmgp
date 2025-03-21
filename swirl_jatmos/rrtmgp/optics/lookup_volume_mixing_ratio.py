@@ -23,7 +23,7 @@ from absl import flags
 from etils import epath
 import jax
 import jax.numpy as jnp
-from swirl_jatmos import types
+from swirl_jatmos import jatmos_types
 from swirl_jatmos.rrtmgp.config import radiative_transfer
 from swirl_jatmos.rrtmgp.optics import constants
 from swirl_jatmos.rrtmgp.optics import optics_utils
@@ -83,7 +83,7 @@ def from_config(
         'p_ref' in vmr_sounding
     ), f'Missing p_ref column in sounding file {vmr_sounding_filepath}'
     profiles = {
-        key: jnp.array(values, dtype=types.f_dtype)
+        key: jnp.array(values, dtype=jatmos_types.f_dtype)
         for key, values in vmr_sounding.items()
     }
 

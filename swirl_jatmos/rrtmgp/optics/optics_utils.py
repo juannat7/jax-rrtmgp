@@ -23,7 +23,7 @@ from typing import Callable, TypeAlias
 
 import jax
 import jax.numpy as jnp
-from swirl_jatmos import types
+from swirl_jatmos import jatmos_types
 
 Array: TypeAlias = jax.Array
 
@@ -186,7 +186,7 @@ def floor_idx(f: Array, reference_values: Array) -> Array:
   delta = reference_values[1] - reference_values[0]
   size = reference_values.shape[0]
   truncated_div = jnp.floor_divide(f - reference_values[0], delta)
-  truncated_div = truncated_div.astype(types.i_dtype)
+  truncated_div = truncated_div.astype(jatmos_types.i_dtype)
   return jnp.clip(truncated_div, 0, size - 1)
 
 

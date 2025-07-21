@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+jax_rrtmgp.egg-info/
+*.egg
+*.env
+.env
+venv/
+build/
+dist/
+*.log
+
+# JAX cache
+jax_cache/
+
+# VSCode
+.vscode/
+
+# macOS
+.DS_Store
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+
+# Test/coverage
+.coverage
+htmlcov/
+.tox/
+.nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# C/C++ build artifacts
+*.o
+*.so
+*.dll
+*.dylib
+*.a
+*.out
+
+# CMake
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
+*.~*
+
+# LLM notes
+CLAUDE.md
+.claude
+
+.pytest_cache/

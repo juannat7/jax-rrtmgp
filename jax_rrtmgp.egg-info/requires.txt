@@ -1,6 +1,0 @@
-absl-py
-dataclasses-json
-etils
-jax
-netCDF4
-numpy

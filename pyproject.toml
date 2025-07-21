@@ -20,11 +20,16 @@ classifiers = [
 keywords = ["atmospheric modeling", "radiative transfer", "RRTMGP", "JAX", "climate science"]
 
 dependencies = [
-    "absl-py",
     "dataclasses-json",
     "jax",
     "netCDF4",
     "numpy",
+    ]
+
+    [project.optional-dependencies]
+    dev = [
+      "pytest",
+    ]
 ]
 
 [project.urls]

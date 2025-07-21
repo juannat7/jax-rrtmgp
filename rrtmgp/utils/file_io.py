@@ -16,7 +16,7 @@
 
 import csv
 
-from absl import logging
+import logging
 from pathlib import Path
 import numpy as np
 

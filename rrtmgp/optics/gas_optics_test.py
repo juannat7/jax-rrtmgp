@@ -16,7 +16,7 @@
 
 from typing import TypeAlias
 
-from absl.testing import absltest
+import unittest
 from pathlib import Path
 import jax
 import jax.numpy as jnp
@@ -55,7 +55,7 @@ def assert_interpolant_allclose(i1: Interpolant, i2: Interpolant):
   )
 
 
-class GasOpticsTest(absltest.TestCase):
+class GasOpticsTest(unittest.TestCase):
 
   def setUp(self):
     super(GasOpticsTest, self).setUp()
@@ -287,4 +287,4 @@ class GasOpticsTest(absltest.TestCase):
     )
 
 if __name__ == '__main__':
-  absltest.main()
+  unittest.main()

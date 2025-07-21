@@ -19,7 +19,6 @@ from typing import TypeAlias
 
 import jax
 import jax.numpy as jnp
-from rrtmgp import jatmos_types
 from rrtmgp.optics import lookup_gas_optics_base
 from rrtmgp.optics import lookup_gas_optics_longwave
 from rrtmgp.optics import lookup_gas_optics_shortwave
@@ -65,7 +64,7 @@ def _mixing_fraction_interpolant(
 ) -> Interpolant:
   """Create a mixing fraction interpolant based on desired number of points."""
   return optics_utils.create_linear_interpolant(
-      f, jnp.linspace(0.0, 1.0, n_mixing_fraction, dtype=jatmos_types.f_dtype)
+      f, jnp.linspace(0.0, 1.0, n_mixing_fraction, dtype=jnp.float_)
   )
 
 
@@ -102,7 +101,7 @@ def get_vmr(
     vmr_gm[idx_gases[k]] = v
 
   vmr = optics_utils.lookup_values(
-      jnp.stack(vmr_gm, dtype=jatmos_types.f_dtype), (species_idx,)
+      jnp.stack(vmr_gm, dtype=jnp.float_), (species_idx,)
   )
 
   # Overwrite with available precomputed vmr.
@@ -405,7 +404,7 @@ def _compute_minor_optical_depth(
       minor_start_idx >= 0,
       true_fun=lambda: minor_start_idx,
       false_fun=lambda: jnp.array(
-          minor_absorber_intervals, dtype=jatmos_types.i_dtype
+          minor_absorber_intervals, dtype=jnp.int_
       ),
   )
   tau_minor_0 = jnp.zeros_like(temperature)

@@ -23,7 +23,6 @@ import jax.numpy as jnp
 import netCDF4 as nc
 import numpy as np
 from rrtmgp import constants
-from rrtmgp import jatmos_types
 from rrtmgp import kernel_ops
 from rrtmgp import test_util
 from rrtmgp.config import radiative_transfer
@@ -133,7 +132,7 @@ def _setup_atmospheric_profiles() -> tuple[
   # (temp_internal).
   nx, ny, nz = temp_internal.shape  # 18, 100, 60
   nz_with_halos = nz + 2 * halo_width
-  temperature = np.zeros((nx, ny, nz_with_halos), dtype=jatmos_types.f_dtype)
+  temperature = np.zeros((nx, ny, nz_with_halos), dtype=jnp.float_)
   temperature[:, :, halo_width:-halo_width] = temp_internal
   temperature[:, :, 0] = 2 * temp_level[:, :, 0] - temp_internal[:, :, 0]
   temperature[:, :, -1] = 2 * temp_level[:, :, -1] - temp_internal[:, :, -1]
@@ -246,7 +245,7 @@ class ClearSkyTest(parameterized.TestCase):
 
     sfc_temperature_value = sfc_temperature_allsites[rfmip_expt_id, rfmip_site]
     sfc_temperature = sfc_temperature_value * jnp.ones(
-        (n_horiz, n_horiz), dtype=jatmos_types.f_dtype
+        (n_horiz, n_horiz), dtype=jnp.float_
     )
     p = convert_to_3d(pressure_allsites[rfmip_site, :])
     pressure_level = convert_to_3d(pressure_level_allsites[rfmip_site, :])

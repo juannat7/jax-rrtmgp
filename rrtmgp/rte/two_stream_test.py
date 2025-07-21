@@ -15,8 +15,8 @@
 import functools
 from typing import TypeAlias
 
-from absl.testing import absltest
-from absl.testing import parameterized
+import pytest
+import unittest
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -86,9 +86,9 @@ def _update_temperature_from_heating_rate(
   return updated_temperature, temperature_stefan_boltzmann
 
 
-class TwoStreamTest(parameterized.TestCase):
+class TestTwoStream:
 
-  @parameterized.parameters(True, False)
+  @pytest.mark.parametrize("use_scan", [True, False])
   def test_gray_atmosphere_longwave_equilibrium(self, use_scan: bool):
     """Check the longwave fluxes converge to an equilibrium state."""
     # SETUP
@@ -201,12 +201,12 @@ class TwoStreamTest(parameterized.TestCase):
     temperature_face = _remove_halos(temperature_face)
     temperature_sb_reference = _remove_halos(temperature_sb_reference)
 
-    self.assertFalse(np.any(np.isnan(temperature_face)))
+    assert not np.any(np.isnan(temperature_face))
     np.testing.assert_allclose(
         temperature_face, temperature_sb_reference, atol=0.03, rtol=2e-4
     )
 
-  @parameterized.parameters(True, False)
+  @pytest.mark.parametrize("use_scan", [True, False])
   def test_gray_atmosphere_shortwave(self, use_scan: bool):
     """Check the direct solar radiation reaching the surface."""
     # SETUP
@@ -319,4 +319,4 @@ class TwoStreamTest(parameterized.TestCase):
 
 
 if __name__ == '__main__':
-  absltest.main()
+  pytest.main([__file__])

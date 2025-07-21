@@ -14,7 +14,7 @@
 
 """Tests whether the atmospheric conditions are loaded properly from a proto."""
 
-from absl.testing import absltest
+import unittest
 from pathlib import Path
 from rrtmgp.config import radiative_transfer
 from rrtmgp.optics import atmospheric_state

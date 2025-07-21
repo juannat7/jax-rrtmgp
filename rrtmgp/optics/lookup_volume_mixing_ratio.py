@@ -19,11 +19,10 @@ import dataclasses
 import json
 from typing import Callable, TypeAlias
 
-from absl import flags
+import os
 from pathlib import Path
 import jax
 import jax.numpy as jnp
-from rrtmgp import jatmos_types
 from rrtmgp.config import radiative_transfer
 from rrtmgp.optics import constants
 from rrtmgp.optics import optics_utils
@@ -31,15 +30,16 @@ from rrtmgp.utils import file_io
 
 Array: TypeAlias = jax.Array
 
+# Configuration via environment variable  
+# Set USE_RCEMIP_OZONE_PROFILE=true to use the analytic RCEMIP ozone profile
+_USE_RCEMIP_OZONE_PROFILE = os.getenv('USE_RCEMIP_OZONE_PROFILE', 'false').lower() == 'true'
 
-_USE_RCEMIP_OZONE_PROFILE = flags.DEFINE_bool(
-    'use_rcemip_ozone_profile',
-    False,
-    'If true, the analytic profile for ozone given for the RCEMIP configuration'
-    ' will be used, overriding the provided lookup table.  If no lookup table'
-    ' is provided, then ozone will not be included (as usual).',
-    allow_override=True,
-)
+class _OzoneConfig:
+    """Configuration container for ozone profile option."""
+    def __init__(self):
+        self.value = _USE_RCEMIP_OZONE_PROFILE
+
+_USE_RCEMIP_OZONE_PROFILE = _OzoneConfig()
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
@@ -83,7 +83,7 @@ def from_config(
         'p_ref' in vmr_sounding
     ), f'Missing p_ref column in sounding file {vmr_sounding_filepath}'
     profiles = {
-        key: jnp.array(values, dtype=jatmos_types.f_dtype)
+        key: jnp.array(values, dtype=jnp.float_)
         for key, values in vmr_sounding.items()
     }
 

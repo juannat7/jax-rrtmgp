@@ -22,7 +22,6 @@ import jax
 import jax.numpy as jnp
 import netCDF4 as nc
 import numpy as np
-from rrtmgp import jatmos_types
 from rrtmgp.optics import constants
 from rrtmgp.optics import data_loader_base
 
@@ -183,7 +182,7 @@ def _create_rrtm_consistent_minor_gas_index(
     for i, g in enumerate(arr):
       if g:
         idx[i] = idx_gases[g]
-    return jnp.array(idx, dtype=jatmos_types.i_dtype)
+    return jnp.array(idx, dtype=jnp.int_)
 
   idx_minor = idx_tensor(gases_minor_arr)
   idx_scale = idx_tensor(scaling_gases_arr)
@@ -240,10 +239,10 @@ def _minor_gas_mappings(
         + 1
     )
   return (
-      jnp.array(minor_bnd, dtype=jatmos_types.i_dtype),
-      jnp.array(minor_bnd_start, dtype=jatmos_types.i_dtype),
-      jnp.array(minor_bnd_end, dtype=jatmos_types.i_dtype),
-      jnp.array(minor_gpt_shift, dtype=jatmos_types.i_dtype),
+      jnp.array(minor_bnd, dtype=jnp.int_),
+      jnp.array(minor_bnd_start, dtype=jnp.int_),
+      jnp.array(minor_bnd_end, dtype=jnp.int_),
+      jnp.array(minor_gpt_shift, dtype=jnp.int_),
   )
 
 
@@ -306,7 +305,7 @@ def load_data(
   g_point_to_bnd = np.asarray([None] * dims['gpt'])
   for i in range(dims['bnd']):
     g_point_to_bnd[bnd_limits_gpt[i, 0] : bnd_limits_gpt[i, 1] + 1] = i
-  g_point_to_bnd = np.array(g_point_to_bnd, dtype=jatmos_types.i_dtype)
+  g_point_to_bnd = np.array(g_point_to_bnd, dtype=jnp.int_)
   minor_lower_gpt_lims = ds['minor_limits_gpt_lower'][:].data - 1
   (
       minor_lower_bnd,

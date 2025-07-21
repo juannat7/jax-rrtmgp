@@ -23,7 +23,6 @@ import jax.numpy as jnp
 import netCDF4 as nc
 import numpy as np
 from rrtmgp import constants
-from rrtmgp import jatmos_types
 from rrtmgp import kernel_ops
 from rrtmgp import test_util
 from rrtmgp.config import radiative_transfer
@@ -123,7 +122,7 @@ def _setup_atmospheric_profiles() -> tuple[
 
   nx, nz = temp_internal.shape  # 42, 42
   nz_with_halos = nz + 2 * halo_width
-  temperature = np.zeros((nx, nz_with_halos), dtype=jatmos_types.f_dtype)
+  temperature = np.zeros((nx, nz_with_halos), dtype=jnp.float_)
   temperature[:, halo_width:-halo_width] = temp_internal
   # Fill in halos by extrapolating from face (temp_level) and node values.
   temperature[:, 0] = 2 * temp_level[:, 0] - temp_internal[:, 0]
@@ -224,7 +223,7 @@ class AllSkyTest(parameterized.TestCase):
         test_util.convert_to_3d_array_and_tile, dim=2, num_repeats=n_horiz
     )
     sfc_temperature = temperature_level_allsites[site, 1] * jnp.ones(
-        (n_horiz, n_horiz), dtype=jatmos_types.f_dtype
+        (n_horiz, n_horiz), dtype=jnp.float_
     )
     vmr_fields = {
         k: convert_to_3d(v[site, :]) for k, v in vmr_profiles_allsites.items()

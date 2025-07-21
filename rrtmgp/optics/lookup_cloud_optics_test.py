@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from absl.testing import absltest
+import unittest
 from pathlib import Path
 from rrtmgp.optics import lookup_cloud_optics
 

@@ -21,7 +21,6 @@ from typing import Any, TypeAlias
 import jax
 import jax.numpy as jnp
 import netCDF4 as nc
-from rrtmgp import jatmos_types
 from rrtmgp.optics import data_loader_base
 from rrtmgp.optics import lookup_gas_optics_base
 
@@ -67,7 +66,7 @@ def _load_data(
       data['temperature_ref_min'],
       data['temperature_ref_max'],
       data['n_t_plnk'],
-      dtype=jatmos_types.f_dtype,
+      dtype=jnp.float_,
   )
   data['totplnk'] = tables['totplnk']
   return data

@@ -16,7 +16,7 @@
 import os
 from typing import Literal, TypeAlias
 
-from absl.testing import absltest
+import unittest
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -77,12 +77,11 @@ def convert_to_3d_array_and_tile(
   return f_3d
 
 
-def save_1d_array_to_tempfile(
-    test: absltest.TestCase, array: npt.ArrayLike
-) -> str:
+def save_1d_array_to_tempfile(array: npt.ArrayLike) -> str:
   """Saves a 1D array to a tempfile and returns the path to the tempfile."""
-  tempfile = test.create_tempfile()
-  fname = os.path.join(tempfile)
+  import tempfile
+  fd, fname = tempfile.mkstemp(suffix='.txt')
+  os.close(fd)  # Close the file descriptor, we'll write with numpy
   np.savetxt(fname, array)
   return fname
 

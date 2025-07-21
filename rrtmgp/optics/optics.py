@@ -17,7 +17,7 @@
 from collections.abc import Mapping
 from typing import Callable, TypeAlias, cast
 
-from absl import logging
+import logging
 import jax
 import jax.numpy as jnp
 import numpy as np

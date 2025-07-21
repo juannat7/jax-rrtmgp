@@ -14,7 +14,7 @@
 
 """Tests whether the shortwavewave optics data for atmospheric gases are loaded properly."""
 
-from absl.testing import absltest
+import unittest
 from pathlib import Path
 import jax.numpy as jnp
 import numpy as np

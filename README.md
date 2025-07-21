@@ -1,7 +1,5 @@
 # JAX-RRTMGP: JAX-based RRTMGP Radiative Transfer
 
-*This is not an officially supported Google product.*
-
 JAX-RRTMGP is a JAX-based implementation of the RRTMGP (Rapid Radiative Transfer Model for General circulation models - Parallel) radiative transfer scheme. This package provides fast, differentiable radiative transfer calculations for atmospheric modeling applications.
 
 RRTMGP is a correlated k-distribution model for computing optical depths, source functions, and fluxes for longwave and shortwave radiation in planetary atmospheres. This JAX implementation enables automatic differentiation and efficient execution on GPUs and TPUs.
@@ -10,7 +8,7 @@ RRTMGP is a correlated k-distribution model for computing optical depths, source
 
 - **JAX-native implementation**: Full compatibility with JAX transformations (jit, grad, vmap, pmap)
 - **GPU/TPU acceleration**: Efficient execution on modern accelerators
-- **Automatic differentiation**: Enable gradient-based optimization and sensitivity analysis
+- **Automatic differentiation**: Enable gradient-based optimization and sensitivity analysis [IN PROGRESS]
 - **Longwave and shortwave radiation**: Complete radiative transfer calculations
 - **Gas and cloud optics**: Support for molecular absorption and cloud scattering/absorption
 - **RRTMGP data files included**: Pre-computed optical property lookup tables
@@ -30,7 +28,7 @@ python3 -m pip install -e jax-rrtmgp
 ```python
 import jax
 import jax.numpy as jnp
-from swirl_jatmos.rrtmgp import rrtmgp
+from rrtmgp import rrtmgp
 
 # Set up atmospheric state
 temperature = jnp.array([...])  # Temperature profile [K]
@@ -57,9 +55,7 @@ fluxes_sw = rrtmgp.compute_shortwave_fluxes(rrtmgp_state, ...)
 
 - JAX: Automatic differentiation and JIT compilation
 - NumPy: Numerical computing
-- SciPy: Scientific computing utilities  
 - NetCDF4: Reading RRTMGP data files
-- absl-py: Command line flags and logging
 
 ## Testing
 
@@ -78,7 +74,7 @@ python rrtmgp/rte/two_stream_test.py
 
 ## License
 
-Licensed under the Apache License, Version 2.0. This implementation is based on the original RRTMGP Fortran code by Eli Mlawer and Robert Pincus.
+Licensed under the Apache License, Version 2.0. This implementation is based on the JAX port of the original RRTMGP Fortran code by Eli Mlawer and Robert Pincus, originally included in [swirl-jatmos](https://github.com/google-research/swirl-jatmos).
 
 ## Citation
 

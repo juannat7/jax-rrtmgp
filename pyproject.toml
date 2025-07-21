@@ -1,32 +1,32 @@
 [project]
-name = "swirl_jatmos"
-description = "Swirl-Jatmos is a tool for performing 3D atmospheric large-eddy simulations in a distributed setting on accelerators such as Google's Tensor Processing Units (TPUs) and GPUs."
+name = "jax-rrtmgp"
+description = "JAX-based implementation of RRTMGP radiative transfer for atmospheric modeling."
 readme = "README.md"
 requires-python = ">=3.11"
 version = "0.1"
 license = {file = "LICENSE"}
 authors = [
   {name = "parkerjeff", email="parkerjeff@google.com"},
+  {name = "dwatsonparris", email="dwatsonparris@ucsd.edu"}
   ]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "License :: OSI Approved :: Apache Software License",
     "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+    "Topic :: Scientific/Engineering :: Physics",
 ]
-keywords = []
+keywords = ["atmospheric modeling", "radiative transfer", "RRTMGP", "JAX", "climate science"]
 
 dependencies = [
     "absl-py",
     "dataclasses-json",
-    "etils",
-    "jax[cuda]",
+    "jax",
     "netCDF4",
     "numpy",
-    "orbax",
-    "scipy",
 ]
 
 [project.urls]
-homepage = "https://github.com/google-research/swirl-jatmos"
-repository = "https://github.com/google-research/swirl-jatmos"
+homepage = "https://github.com/climate-analytics-lab/jax-rrtmgp"
+repository = "https://github.com/climate-analytics-lab/jax-rrtmgp"

@@ -1,74 +1,89 @@
-# Swirl-Jatmos: JAX Atmospheric Simulation
+# JAX-RRTMGP: JAX-based RRTMGP Radiative Transfer
+
 *This is not an officially supported Google product.*
 
-Jatmos is a tool for performing 3D atmospheric large-eddy simulations in a
-distributed setting on accelerators such as Google's Tensor Processing Units
-(TPUs) and GPUs. Jatmos solves the anelastic Navier-Stokes equations on a
-staggered, Arakawa C-grid, with physics modules supporting equilibrium
-thermodynamics, one-moment microphysics, and RRTMGP radiative transfer.
+JAX-RRTMGP is a JAX-based implementation of the RRTMGP (Rapid Radiative Transfer Model for General circulation models - Parallel) radiative transfer scheme. This package provides fast, differentiable radiative transfer calculations for atmospheric modeling applications.
 
-Jatmos uses JAX's automatic parallelization to achieve parallelism without the
-need to explicitly write communication directives.
+RRTMGP is a correlated k-distribution model for computing optical depths, source functions, and fluxes for longwave and shortwave radiation in planetary atmospheres. This JAX implementation enables automatic differentiation and efficient execution on GPUs and TPUs.
+
+## Features
+
+- **JAX-native implementation**: Full compatibility with JAX transformations (jit, grad, vmap, pmap)
+- **GPU/TPU acceleration**: Efficient execution on modern accelerators
+- **Automatic differentiation**: Enable gradient-based optimization and sensitivity analysis
+- **Longwave and shortwave radiation**: Complete radiative transfer calculations
+- **Gas and cloud optics**: Support for molecular absorption and cloud scattering/absorption
+- **RRTMGP data files included**: Pre-computed optical property lookup tables
+- **Comprehensive testing**: Extensive test suite with reference data
 
 ## Installation
+
 It is recommended to install in a virtual environment.
 
 ```shell
-git clone https://github.com/google-research/swirl-jatmos.git
-python3 -m pip install -e swirl-jatmos
+git clone https://github.com/climate-analytics-lab/jax-rrtmgp.git
+python3 -m pip install -e jax-rrtmgp
 ```
 
-## Demos
-See colab demos:
+## Basic Usage
 
-- [Supercell demo](swirl_jatmos/demos/supercell_demo.ipynb)
-- [RCEMIP demo](swirl_jatmos/demos/rcemip_demo.ipynb)
+```python
+import jax
+import jax.numpy as jnp
+from swirl_jatmos.rrtmgp import rrtmgp
 
-## Equations solved
-Prognostic equations are solved for the following variables:
+# Set up atmospheric state
+temperature = jnp.array([...])  # Temperature profile [K]
+pressure = jnp.array([...])     # Pressure profile [Pa] 
+vmr_h2o = jnp.array([...])      # Water vapor volume mixing ratio
 
-- Velocities $u$, $v$, $w$ (anelastic momentum equation)
-- Linearized liquid-ice potential temperature $\theta_{li}$
-- Total specific humidity $q_t$
-- Mass fractions for 2 precipitation species, rain $q_r$ and snow $q_s$
+# Initialize RRTMGP
+config = rrtmgp.get_default_config()
+rrtmgp_state = rrtmgp.initialize(config, pressure, temperature, vmr_h2o)
 
-Additionally, the continuity equation is imposed in the form of a
-divergence-free mass flux $\nabla \cdot (\rho \mathbf{u}) = 0$, which determines
-the pressure $p$ through the solution to a Poisson equation.
+# Compute radiative fluxes
+fluxes_lw = rrtmgp.compute_longwave_fluxes(rrtmgp_state, ...)
+fluxes_sw = rrtmgp.compute_shortwave_fluxes(rrtmgp_state, ...)
+```
 
-## Features of Jatmos
+## Package Structure
 
-- Staggered grid in Cartesian coordinates, nonuniform grid allowed
-- Conservative finite-volume formulation
-- WENO5 (among other) methods for convection
-- RK3 timestepper
-- Adaptive timestepping based on a CFL condition
-- Equilibrium thermodynamics for water phases
-- One-moment microphysics
-- Poisson solver via a tensor-product-based decomposition
-- RRTMGP radiative transfer
-- Boundary conditions: periodic in the horizontal, no-slip or free-slip in the
-vertical
-- Distributed checkpointing using Orbax
-- Simulations are performed in FP32 precision
-- Can run on TPU and GPU
+- `rrtmgp`: Main RRTMGP interface
+- `rrtmgp.optics`: Gas and cloud optical property calculations
+- `rrtmgp.rte`: Radiative transfer equation solvers
+- `rrtmgp.optics.rrtmgp_data`: Pre-computed lookup tables
 
-## Benchmarking
-Using Google TPUv6e (Trillium), benchmark performance results with $256^3$ grid
-points per TPU core are as follows:
+## Dependencies
 
-| # of TPU cores  | Wall time per timestep (ms) |
-| --------------- | --------------------------- |
-| 1               | 120                         |
-| 2               | 124                         |
-| 4               | 144                         |
-| 8               | 178                         |
-| 64              | 570                         |
+- JAX: Automatic differentiation and JIT compilation
+- NumPy: Numerical computing
+- SciPy: Scientific computing utilities  
+- NetCDF4: Reading RRTMGP data files
+- absl-py: Command line flags and logging
 
-In this benchmark, a single timestep comprises the 3 stages of the RK3
-timestepper. Each stage consists of the equations for all prognostic variables,
-the pressure Poisson solver, and the equilibrium thermodynamics nonlinear solve.
- RRTMGP is not included within the benchmark.
+## Testing
 
-(Note that JAX's automatic parallelization is used, and no specific effort has
-yet been made to optimize the performance at a large number of cores.)
+Run the test suite with:
+
+```bash
+pytest rrtmgp/
+```
+
+Or run individual test modules:
+
+```bash
+python rrtmgp/optics/gas_optics_test.py
+python rrtmgp/rte/two_stream_test.py
+```
+
+## License
+
+Licensed under the Apache License, Version 2.0. This implementation is based on the original RRTMGP Fortran code by Eli Mlawer and Robert Pincus.
+
+## Citation
+
+If you use this software, please cite:
+
+1. The original RRTMGP paper: Pincus, R., Mlawer, E. J., and Delamere, J. S.: Balancing accuracy, efficiency, and flexibility in radiation calculations for dynamical models, J. Adv. Model. Earth Syst., 11, 3074-3089, 2019.
+
+2. This JAX implementation: [Add citation when published]

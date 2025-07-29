@@ -15,8 +15,8 @@
 import functools
 from typing import TypeAlias
 
-from absl.testing import absltest
-from absl.testing import parameterized
+import unittest
+from parameterized import parameterized
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -41,7 +41,7 @@ def _remove_halos(f: Array) -> Array:
   return f[:, :, 1:-1]
 
 
-class MonochromaticTwoStreamTest(parameterized.TestCase):
+class MonochromaticTwoStreamTest(unittest.TestCase):
 
   def test_lw_combine_sources(self):
     # SETUP
@@ -189,7 +189,7 @@ class MonochromaticTwoStreamTest(parameterized.TestCase):
         output['r_dir'], expected_r_dir, rtol=1e-5, atol=0
     )
 
-  @parameterized.parameters(True, False)
+  @parameterized.expand([(True,), (False,)])
   def test_sw_cell_source(self, use_scan: bool):
     # SETUP
     n = 8
@@ -269,7 +269,7 @@ class MonochromaticTwoStreamTest(parameterized.TestCase):
         output['sfc_src'], expected_sfc_src, rtol=1e-5, atol=0
     )
 
-  @parameterized.parameters(True, False)
+  @parameterized.expand([(True,), (False,)])
   def test_lw_transport(self, use_scan: bool):
     """Check the longwave radiative transfer equation is solved correctly."""
     # SETUP
@@ -345,7 +345,7 @@ class MonochromaticTwoStreamTest(parameterized.TestCase):
         lw_flux_net, expected_lw_flux_net, rtol=1e-5, atol=0
     )
 
-  @parameterized.parameters(True, False)
+  @parameterized.expand([(True,), (False,)])
   def test_sw_transport(self, use_scan: bool):
     """Check the shortwave radiative transfer equation is solved correctly."""
     # SETUP
@@ -422,4 +422,4 @@ class MonochromaticTwoStreamTest(parameterized.TestCase):
 
 
 if __name__ == '__main__':
-  absltest.main()
+  unittest.main()

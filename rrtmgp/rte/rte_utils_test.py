@@ -14,8 +14,9 @@
 
 from typing import TypeAlias
 
-from absl.testing import absltest
-from absl.testing import parameterized
+import unittest
+from parameterized import parameterized
+from itertools import product
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -24,12 +25,12 @@ from rrtmgp.rte import rte_utils
 Array: TypeAlias = jax.Array
 
 
-class RteUtilsTest(parameterized.TestCase):
+class RteUtilsTest(unittest.TestCase):
 
-  @parameterized.product(
-      forward=[True, False],
-      use_scan=[True, False],
-  )
+  @parameterized.expand([
+    (fwd, use_scan)
+    for fwd, use_scan in product([True, False], [True, False])
+  ])
   def test_recurrent_op_1d(self, forward: bool, use_scan: bool):
     # SETUP
     n = 8
@@ -60,10 +61,10 @@ class RteUtilsTest(parameterized.TestCase):
     # VERIFICATION
     np.testing.assert_allclose(output, expected_x, rtol=1e-5, atol=1e-5)
 
-  @parameterized.product(
-      forward=[True, False],
-      use_scan=[True, False],
-  )
+  @parameterized.expand([
+    (fwd, use_scan)
+    for fwd, use_scan in product([True, False], [True, False])
+  ])
   def test_recurrent_op(self, forward: bool, use_scan: bool):
     # SETUP
     n = 8
@@ -101,4 +102,4 @@ class RteUtilsTest(parameterized.TestCase):
 
 
 if __name__ == '__main__':
-  absltest.main()
+  unittest.main()

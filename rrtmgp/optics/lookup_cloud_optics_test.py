@@ -22,7 +22,7 @@ root = Path()
 _LW_LOOKUP_TABLE_FILEPATH = root / _LW_LOOKUP_TABLE_FILENAME
 
 
-class LookupCloudOpticsTest(absltest.TestCase):
+class LookupCloudOpticsTest(unittest.TestCase):
 
   def test_longwave_optics_lookup_loads_data(self):
     # ACTION
@@ -41,4 +41,4 @@ class LookupCloudOpticsTest(absltest.TestCase):
 
 
 if __name__ == '__main__':
-  absltest.main()
+  unittest.main()

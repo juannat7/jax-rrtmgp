@@ -25,7 +25,7 @@ root = Path()
 _LW_LOOKUP_TABLE_FILEPATH = root / _LW_LOOKUP_TABLE_FILENAME
 
 
-class LookupGasOpticsLongwaveTest(absltest.TestCase):
+class LookupGasOpticsLongwaveTest(unittest.TestCase):
 
   def test_longwave_optics_lookup_loads_data(self):
     lookup_longwave = lookup_gas_optics_longwave.from_nc_file(
@@ -72,4 +72,4 @@ class LookupGasOpticsLongwaveTest(absltest.TestCase):
 
 if __name__ == '__main__':
   jax.config.update('jax_enable_x64', True)
-  absltest.main()
+  unittest.main()

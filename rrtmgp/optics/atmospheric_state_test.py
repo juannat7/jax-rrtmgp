@@ -27,7 +27,7 @@ _GLOBAL_MEAN_VMR_FILEPATH = root / _GLOBAL_MEAN_VMR_FILENAME
 _VMR_SOUNDING_FILEPATH = root / _VMR_SOUNDING_FILENAME
 
 
-class AtmosphericStateTest(absltest.TestCase):
+class AtmosphericStateTest(unittest.TestCase):
 
   def test_atmospheric_state_lookup_loads_data_from_proto(self):
     atmospheric_state_cfg = radiative_transfer.AtmosphericStateCfg(
@@ -46,8 +46,8 @@ class AtmosphericStateTest(absltest.TestCase):
     self.assertEqual(atmos_state.zenith, 1.5)
     self.assertEqual(atmos_state.irrad, 1000.0)
     self.assertEqual(atmos_state.toa_flux_lw, 50.0)
-    self.assertLen(atmos_state.vmr.profiles['ch4'], 64)
+    self.assertEqual(len(atmos_state.vmr.profiles['ch4']), 64)
 
 
 if __name__ == '__main__':
-  absltest.main()
+  unittest.main()

@@ -16,10 +16,8 @@
 
 import functools
 from typing import TypeAlias
+import unittest
 from unittest import mock
-
-from absl.testing import absltest
-from absl.testing import parameterized
 from pathlib import Path
 import jax
 import jax.numpy as jnp
@@ -76,7 +74,7 @@ def _remove_halos(f: Array) -> Array:
   return f[:, :, 1:-1]
 
 
-class RRTMOpticsTest(parameterized.TestCase):
+class RRTMOpticsTest(unittest.TestCase):
 
   def setUp(self):
     super().setUp()
@@ -95,28 +93,28 @@ class RRTMOpticsTest(parameterized.TestCase):
     self.rrtm_lib = optics.RRTMOptics(self.vmr_lib, radiation_params_rrtm)
 
     # Create mock functions for use in tests.
-    self.mock_major_optical_depth_fn = self.enter_context(
+    self.mock_major_optical_depth_fn = self.enterContext(
         mock.patch.object(
             gas_optics, 'compute_major_optical_depth', autospec=True
         )
     )
-    self.mock_minor_optical_depth_fn = self.enter_context(
+    self.mock_minor_optical_depth_fn = self.enterContext(
         mock.patch.object(
             gas_optics, 'compute_minor_optical_depth', autospec=True
         )
     )
-    self.mock_rayleigh_optical_depth_fn = self.enter_context(
+    self.mock_rayleigh_optical_depth_fn = self.enterContext(
         mock.patch.object(
             gas_optics, 'compute_rayleigh_optical_depth', autospec=True
         )
     )
-    self.mock_planck_fraction_fn = self.enter_context(
+    self.mock_planck_fraction_fn = self.enterContext(
         mock.patch.object(gas_optics, 'compute_planck_fraction', autospec=True)
     )
-    self.mock_planck_source_fn = self.enter_context(
+    self.mock_planck_source_fn = self.enterContext(
         mock.patch.object(gas_optics, 'compute_planck_sources', autospec=True)
     )
-    self.mock_cloud_optical_props_fn = self.enter_context(
+    self.mock_cloud_optical_props_fn = self.enterContext(
         mock.patch.object(
             cloud_optics, 'compute_optical_properties', autospec=True
         )
@@ -130,7 +128,7 @@ class RRTMOpticsTest(parameterized.TestCase):
 
     # Create a linear temperature profile = [299, 298, 297, ..., 282]
     temperature = jnp.arange(299, 281, -1, dtype=jnp.float32)
-    self.assertLen(temperature, nz)
+    self.assertEqual(len(temperature), nz)
 
     # Convert from 1D to 3D array.
     temperature = test_util.convert_to_3d_array_and_tile(
@@ -427,7 +425,7 @@ class RRTMOpticsTest(parameterized.TestCase):
     self.assertEqual(self.rrtm_lib.n_gpt_sw, 224)
 
 
-class GrayAtmosphereOpticsTest(parameterized.TestCase):
+class GrayAtmosphereOpticsTest(unittest.TestCase):
 
   def test_compute_optical_properties_gray_atmosphere(self):
     """Checks gray atmosphere optical depth, albedo, and asymmetry factor."""
@@ -569,4 +567,4 @@ class GrayAtmosphereOpticsTest(parameterized.TestCase):
 
 
 if __name__ == '__main__':
-  absltest.main()
+  unittest.main()

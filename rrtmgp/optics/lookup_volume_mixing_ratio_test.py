@@ -33,7 +33,7 @@ _EXPECTED_VMR_CH4_FROM_SOUNDING = [
 ]
 
 
-class LookupVolumeMixingRatioTest(absltest.TestCase):
+class LookupVolumeMixingRatioTest(unittest.TestCase):
 
   def test_volume_mixing_ratio_lookup_loads_data(self):
     atmospheric_state_cfg = radiative_transfer.AtmosphericStateCfg(
@@ -55,4 +55,4 @@ class LookupVolumeMixingRatioTest(absltest.TestCase):
 
 
 if __name__ == '__main__':
-  absltest.main()
+  unittest.main()

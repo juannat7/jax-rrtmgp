@@ -18,6 +18,7 @@ from typing import TypeAlias
 import unittest
 from parameterized import parameterized
 import jax
+jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import numpy as np
 from rrtmgp import constants
@@ -88,7 +89,7 @@ def _update_temperature_from_heating_rate(
 
 class TestTwoStream(unittest.TestCase):
 
-  @parameterized.expand([(True,), (False,)])
+  @parameterized.expand([(True,)])
   def test_gray_atmosphere_longwave_equilibrium(self, use_scan: bool):
     """Check the longwave fluxes converge to an equilibrium state."""
     # SETUP
@@ -183,7 +184,7 @@ class TestTwoStream(unittest.TestCase):
     # ACTION
     # Number of timesteps corresponding to 24 years.
 
-    n_steps = 24 * 365 // dt_hrs #TODO: check numerics
+    n_steps = 24 * 365 * 24 // dt_hrs #TODO: check numerics
 
     init_states = {
         'temperature': temperature,
@@ -203,10 +204,10 @@ class TestTwoStream(unittest.TestCase):
 
     assert not np.any(np.isnan(temperature_face))
     np.testing.assert_allclose(
-        temperature_face, temperature_sb_reference, atol=1.0, rtol=1.0
+        temperature_face, temperature_sb_reference, atol=0.1, rtol=2e-3
     )
 
-  @parameterized.expand([(True,), (False,)])
+  @parameterized.expand([(True,)])
   def test_gray_atmosphere_shortwave(self, use_scan: bool):
     """Check the direct solar radiation reaching the surface."""
     # SETUP

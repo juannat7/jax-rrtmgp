@@ -19,6 +19,7 @@ from typing import TypeAlias
 import unittest
 from pathlib import Path
 import jax
+jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import numpy as np
 from rrtmgp.config import radiative_transfer
@@ -160,40 +161,42 @@ class GasOpticsTest(unittest.TestCase):
     p = jnp.array([[73509.51892419]], dtype=jnp.float32)
     moles = jnp.array([[1e24]], dtype=jnp.float32)
 
-    with self.subTest('PrecomputedVmrH2O'):
-      # Precomputed VMR for H2O.
-      vmr_fields = {
-          self.gas_optics_lw.idx_h2o: jnp.array([[1.2e-3]], dtype=jnp.float32),
-      }
-      minor_optical_depth = gas_optics.compute_minor_optical_depth(
-          self.gas_optics_lw,
-          self.vmr_lib,
-          moles,
-          temperature,
-          p,
-          100,
-          vmr_fields,
-      )
-      np.testing.assert_allclose(
-          minor_optical_depth, [[3.755038e-7]], rtol=1e-5, atol=1e-12
-      )
+    with jax.disable_jit():
+      # Disable jit commpile to ensure the if/else branch is refreshed at each call
+      with self.subTest('PrecomputedVmrH2O'):
+        # Precomputed VMR for H2O.
+        vmr_fields = {
+            self.gas_optics_lw.idx_h2o: jnp.array([[1.2e-3]], dtype=jnp.float32),
+        }
+        minor_optical_depth = gas_optics.compute_minor_optical_depth(
+            self.gas_optics_lw,
+            self.vmr_lib,
+            moles,
+            temperature,
+            p,
+            100,
+            vmr_fields,
+        )
+        np.testing.assert_allclose(
+            minor_optical_depth, [[3.755038e-7]], rtol=1e-5, atol=1e-12
+        )
 
-    with self.subTest('AbsentH2OVmr'):
-      vmr_fields = {
-          self.gas_optics_lw.idx_o3: jnp.array([[1.2e-3]], dtype=jnp.float32),
-      }
-      minor_optical_depth = gas_optics.compute_minor_optical_depth(
-          self.gas_optics_lw,
-          self.vmr_lib,
-          moles,
-          temperature,
-          p,
-          100,
-          vmr_fields,
-      )
-      np.testing.assert_allclose(
-          [[1.768588e-7]], minor_optical_depth, rtol=1e-5, atol=1e-12
-      )
+      with self.subTest('AbsentH2OVmr'):
+        vmr_fields = {
+            self.gas_optics_lw.idx_o3: jnp.array([[1.2e-3]], dtype=jnp.float32),
+        }
+        minor_optical_depth = gas_optics.compute_minor_optical_depth(
+            self.gas_optics_lw,
+            self.vmr_lib,
+            moles,
+            temperature,
+            p,
+            100,
+            vmr_fields,
+        )
+        np.testing.assert_allclose(
+            [[1.768588e-7]], minor_optical_depth, rtol=1e-5, atol=1e-12
+        )
 
   def test_compute_rayleigh_optical_depth(self):
     """Checks the Rayleigh scattering contribution for a particular g-point."""

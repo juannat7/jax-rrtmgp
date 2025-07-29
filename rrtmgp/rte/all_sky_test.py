@@ -20,6 +20,7 @@ from parameterized import parameterized
 from itertools import product
 from pathlib import Path
 import jax
+jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import netCDF4 as nc
 import numpy as np

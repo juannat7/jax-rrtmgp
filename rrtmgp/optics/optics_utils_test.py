@@ -21,6 +21,7 @@ import unittest
 from parameterized import parameterized
 from pathlib import Path
 import jax
+jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import numpy as np
 from rrtmgp.optics import lookup_gas_optics_longwave
@@ -206,7 +207,7 @@ class OpticsUtilsTest(unittest.TestCase):
 
     # VERIFICATION
     self.assertEqual(interpolated_values.shape, (2, 2))
-    self.assertEqual(interpolated_values[0, 0], element00)
+    self.assertEqual(np.float32(interpolated_values[0, 0]), np.float32(element00))
 
   @parameterized.expand([(True,), (False,)])
   def test_interpolate_with_dependency(self, use_optimized_interpolation: bool):

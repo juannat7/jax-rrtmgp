@@ -7,7 +7,8 @@ version = "0.1"
 license = {file = "LICENSE"}
 authors = [
     {name = "parkerjeff", email="parkerjeff@google.com"},
-    {name = "dwatsonparris", email="dwatsonparris@ucsd.edu"}
+    {name = "dwatsonparris", email="dwatsonparris@ucsd.edu"},
+    {name = "juannathaniel", email="jn2808@columbia.edu"}
 ]
 classifiers = [
     "Programming Language :: Python :: 3",

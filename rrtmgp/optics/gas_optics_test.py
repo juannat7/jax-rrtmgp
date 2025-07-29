@@ -73,16 +73,16 @@ class GasOpticsTest(unittest.TestCase):
 
   def test_get_vmr(self):
     """Tests that correct variable and global mean vmr's are returned."""
-    major_species_idx_h20 = jnp.ones((1, 4), dtype=jnp.int32)
-    major_species_idx_co2 = 2 * jnp.ones((1, 4), dtype=jnp.int32)
-    major_species_idx_o3 = 3 * jnp.ones((1, 4), dtype=jnp.int32)
+    major_species_idx_h20 = jnp.ones((1, 4), dtype=jnp.int_)
+    major_species_idx_co2 = 2 * jnp.ones((1, 4), dtype=jnp.int_)
+    major_species_idx_o3 = 3 * jnp.ones((1, 4), dtype=jnp.int_)
     major_species_idx = jnp.concatenate(
         [major_species_idx_h20, major_species_idx_co2, major_species_idx_o3],
         axis=0,
     )
     precomputed_vmr_h2o = jnp.array(
         [[3.7729078e-06, 1.61512e-05, 0.00273486, 0.018282978]],
-        dtype=jnp.float32,
+        dtype=jnp.float_,
     )
     precomputed_vmr_o3 = jnp.array(
         [[1.9249276e-06, 4.4498346e-08, 4.7968513e-08, 3.5275427e-08]]
@@ -92,7 +92,7 @@ class GasOpticsTest(unittest.TestCase):
         self.gas_optics_lw.idx_o3: precomputed_vmr_o3,
     }
     # A global mean is used for CO2, so vmr does not change with pressure level.
-    expected_vmr_co2 = 3.9754697e-4 * jnp.ones((1, 4), dtype=jnp.float32)
+    expected_vmr_co2 = 3.9754697e-4 * jnp.ones((1, 4), dtype=jnp.float_)
     expected_vmr = jnp.concatenate(
         [precomputed_vmr_h2o, expected_vmr_co2, precomputed_vmr_o3], axis=0
     )
@@ -105,8 +105,8 @@ class GasOpticsTest(unittest.TestCase):
 
   def test_compute_relative_abundance_interpolant(self):
     """Tests that the correct relative abundance interpolants are computed."""
-    troposphere_idx = jnp.ones((3, 4), dtype=jnp.int32)
-    temperature_idx = 10 * jnp.ones((3, 4), dtype=jnp.int32)
+    troposphere_idx = jnp.ones((3, 4), dtype=jnp.int_)
+    temperature_idx = 10 * jnp.ones((3, 4), dtype=jnp.int_)
     ibnd = 4
     relative_abundance_interp = (
         gas_optics._compute_relative_abundance_interpolant(
@@ -118,10 +118,10 @@ class GasOpticsTest(unittest.TestCase):
             True,
         )
     )
-    idx_low = jnp.zeros((3, 4), dtype=jnp.int32)
-    idx_high = jnp.ones((3, 4), dtype=jnp.int32)
-    weight_low = 5.2951004292976034e-06 * jnp.ones((3, 4), dtype=jnp.float32)
-    weight_high = 3.5275427000000043e-07 * jnp.ones((3, 4), dtype=jnp.float32)
+    idx_low = jnp.zeros((3, 4), dtype=jnp.int_)
+    idx_high = jnp.ones((3, 4), dtype=jnp.int_)
+    weight_low = 5.2951004292976034e-06 * jnp.ones((3, 4), dtype=jnp.float_)
+    weight_high = 3.5275427000000043e-07 * jnp.ones((3, 4), dtype=jnp.float_)
     idx_and_weight_low = IndexAndWeight(idx_low, weight_low)
     idx_and_weight_high = IndexAndWeight(idx_high, weight_high)
     expected_interp = Interpolant(idx_and_weight_low, idx_and_weight_high)
@@ -130,16 +130,16 @@ class GasOpticsTest(unittest.TestCase):
   def test_compute_major_optical_depth(self):
     """Checks the optical depth computation for different values of t and p."""
     temperature = jnp.array(
-        [[160.0, 200.0, 300.0], [280.0, 290.0, 355.0]], dtype=jnp.float32
+        [[160.0, 200.0, 300.0], [280.0, 290.0, 355.0]], dtype=jnp.float_
     )
     pressure = jnp.array(
         [
             [1.09663316e5, 90000.0, 80000.0],
             [7.35095189e04, 30000.0, 1.00518357],
         ],
-        dtype=jnp.float32,
+        dtype=jnp.float_,
     )
-    molecules = jnp.array([[1e24]], dtype=jnp.float32)
+    molecules = jnp.array([[1e24]], dtype=jnp.float_)
     major_optical_depth = gas_optics.compute_major_optical_depth(
         self.gas_optics_lw, self.vmr_lib, molecules, temperature, pressure, 70
     )
@@ -148,7 +148,7 @@ class GasOpticsTest(unittest.TestCase):
             [1.071459e-5, 2.313674e-5, 1.053062e-4],
             [7.901242e-5, 4.897409e-5, 1.766592e-7],
         ],
-        dtype=jnp.float32,
+        dtype=jnp.float_,
     )
     np.testing.assert_allclose(
         expected_major_optical_depth, major_optical_depth, rtol=1e-5, atol=0
@@ -157,16 +157,16 @@ class GasOpticsTest(unittest.TestCase):
   def test_compute_minor_optical_depth(self):
     """Checks the minor optical depth computation for a particular g-point."""
     # Temperature corresponding to the 10th reference point.
-    temperature = jnp.array([[310.0]], dtype=jnp.float32)
-    p = jnp.array([[73509.51892419]], dtype=jnp.float32)
-    moles = jnp.array([[1e24]], dtype=jnp.float32)
+    temperature = jnp.array([[310.0]], dtype=jnp.float_)
+    p = jnp.array([[73509.51892419]], dtype=jnp.float_)
+    moles = jnp.array([[1e24]], dtype=jnp.float_)
 
     with jax.disable_jit():
       # Disable jit commpile to ensure the if/else branch is refreshed at each call
       with self.subTest('PrecomputedVmrH2O'):
         # Precomputed VMR for H2O.
         vmr_fields = {
-            self.gas_optics_lw.idx_h2o: jnp.array([[1.2e-3]], dtype=jnp.float32),
+            self.gas_optics_lw.idx_h2o: jnp.array([[1.2e-3]], dtype=jnp.float_),
         }
         minor_optical_depth = gas_optics.compute_minor_optical_depth(
             self.gas_optics_lw,
@@ -183,7 +183,7 @@ class GasOpticsTest(unittest.TestCase):
 
       with self.subTest('AbsentH2OVmr'):
         vmr_fields = {
-            self.gas_optics_lw.idx_o3: jnp.array([[1.2e-3]], dtype=jnp.float32),
+            self.gas_optics_lw.idx_o3: jnp.array([[1.2e-3]], dtype=jnp.float_),
         }
         minor_optical_depth = gas_optics.compute_minor_optical_depth(
             self.gas_optics_lw,
@@ -201,15 +201,15 @@ class GasOpticsTest(unittest.TestCase):
   def test_compute_rayleigh_optical_depth(self):
     """Checks the Rayleigh scattering contribution for a particular g-point."""
     # Temperature corresponding to the 10th reference point.
-    temperature = jnp.array([[310.0]], dtype=jnp.float32)
-    p = jnp.array([[1e5]], dtype=jnp.float32)
-    moles = jnp.array([[1e24]], dtype=jnp.float32)
+    temperature = jnp.array([[310.0]], dtype=jnp.float_)
+    p = jnp.array([[1e5]], dtype=jnp.float_)
+    moles = jnp.array([[1e24]], dtype=jnp.float_)
     # Precomputed VMR for H2O.
-    vmr_fields = {1: jnp.array([[1.2e-5]], dtype=jnp.float32)}
+    vmr_fields = {1: jnp.array([[1.2e-5]], dtype=jnp.float_)}
 
     with self.subTest('PrecomputedVmrH2O'):
       expected_minor_optical_depth = jnp.array(
-          [[9.647629e-9]], dtype=jnp.float32
+          [[9.647629e-9]], dtype=jnp.float_
       )
       minor_optical_depth = gas_optics.compute_rayleigh_optical_depth(
           self.gas_optics_sw,
@@ -229,7 +229,7 @@ class GasOpticsTest(unittest.TestCase):
 
     with self.subTest('AbsentVMRFields'):
       expected_minor_optical_depth = jnp.array(
-          [[9.642172e-9]], dtype=jnp.float32
+          [[9.642172e-9]], dtype=jnp.float_
       )
       minor_optical_depth = gas_optics.compute_rayleigh_optical_depth(
           self.gas_optics_sw,
@@ -249,12 +249,12 @@ class GasOpticsTest(unittest.TestCase):
   def test_compute_planck_fraction(self):
     """Tests the Planck fraction computation."""
     # Temperature corresponding to the 10th reference point.
-    temperature = jnp.array([[310.0]], dtype=jnp.float32)
+    temperature = jnp.array([[310.0]], dtype=jnp.float_)
     # Pressure corresponding to pressure index 4.
-    pressure = jnp.array([[4.92749041e+04]], dtype=jnp.float32)
+    pressure = jnp.array([[4.92749041e+04]], dtype=jnp.float_)
     vmr_fields = {
-        self.gas_optics_lw.idx_h2o: jnp.array([[1.2e-3]], dtype=jnp.float32),
-        self.gas_optics_lw.idx_o3: jnp.array([[3.124e-6]], dtype=jnp.float32),
+        self.gas_optics_lw.idx_h2o: jnp.array([[1.2e-3]], dtype=jnp.float_),
+        self.gas_optics_lw.idx_o3: jnp.array([[3.124e-6]], dtype=jnp.float_),
     }
 
     planck_fraction = gas_optics.compute_planck_fraction(
@@ -270,10 +270,10 @@ class GasOpticsTest(unittest.TestCase):
   def test_compute_planck_sources(self):
     """Checks the Planck source computation for different temperature fields."""
     # Temperature corresponding to the 10th reference point.
-    temperature_center = jnp.array([[310.0]], dtype=jnp.float32)
+    temperature_center = jnp.array([[310.0]], dtype=jnp.float_)
     # Temperature corresponding to the 135th reference Planck temperature.
-    temperature_top = jnp.array([[295.0]], dtype=jnp.float32)
-    planck_fraction = jnp.array([[0.116895]], dtype=jnp.float32)
+    temperature_top = jnp.array([[295.0]], dtype=jnp.float_)
+    planck_fraction = jnp.array([[0.116895]], dtype=jnp.float_)
 
     def planck_src_fn(temp: Array) -> Array:
       return gas_optics.compute_planck_sources(

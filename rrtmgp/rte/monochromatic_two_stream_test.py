@@ -48,8 +48,8 @@ class MonochromaticTwoStreamTest(unittest.TestCase):
     # SETUP
     n = 16
     dx = 0.1
-    planck_src_top = 0.2 + dx * jnp.arange(n, dtype=jnp.float32)
-    planck_src_bottom = 0.5 + dx * jnp.arange(n, dtype=jnp.float32)
+    planck_src_top = 0.2 + dx * jnp.arange(n, dtype=jnp.float_)
+    planck_src_bottom = 0.5 + dx * jnp.arange(n, dtype=jnp.float_)
 
     # Convert from 1D to 3D arrays.
     convert_to_3d = functools.partial(
@@ -250,7 +250,7 @@ class MonochromaticTwoStreamTest(unittest.TestCase):
     expected_sw_src_up = convert_to_3d(expected_sw_src_up)
     expected_sw_src_down = convert_to_3d(expected_sw_src_down)
     expected_sw_flux_down_direct = convert_to_3d(expected_sw_flux_down_direct)
-    expected_sfc_src = expected_sfc_src * jnp.ones((n, n), dtype=jnp.float64)
+    expected_sfc_src = expected_sfc_src * jnp.ones((n, n))
 
     # Remove halos from the output.
     sw_src_up = _remove_halos(output['src_up'])
@@ -292,15 +292,15 @@ class MonochromaticTwoStreamTest(unittest.TestCase):
     src_down = src_up + 0.05
 
     # Constant cell properties
-    t_diff = 0.97 * jnp.ones((n, n, nz), dtype=jnp.float64)
-    r_diff = 0.03 * jnp.ones_like(t_diff, dtype=jnp.float64)
+    t_diff = 0.97 * jnp.ones((n, n, nz))
+    r_diff = 0.03 * jnp.ones_like(t_diff)
 
     # Boundary conditions.
-    toa_flux_down = 0.0 * jnp.ones((n, n), dtype=jnp.float64)
+    toa_flux_down = 0.0 * jnp.ones((n, n))
     # Surface source.
-    sfc_src = 0.02 * jnp.ones((n, n), dtype=jnp.float64)
+    sfc_src = 0.02 * jnp.ones((n, n))
     # Surface emissivity.
-    sfc_emiss = 0.8 * jnp.ones((n, n), dtype=jnp.float64)
+    sfc_emiss = 0.8 * jnp.ones((n, n))
 
     # ACTION
     output = monochromatic_two_stream.lw_transport(
@@ -367,15 +367,15 @@ class MonochromaticTwoStreamTest(unittest.TestCase):
     )
     src_up = convert_to_3d(src_up)
     src_down = src_up + 0.05
-    flux_down_dir = 0.8 * jnp.ones_like(src_up, dtype=jnp.float32)
+    flux_down_dir = 0.8 * jnp.ones_like(src_up, dtype=jnp.float_)
 
     # Constant cell properties
-    t_diff = 0.97 * jnp.ones((n, n, nz), dtype=jnp.float64)
-    r_diff = 0.03 * jnp.ones_like(t_diff, dtype=jnp.float64)
+    t_diff = 0.97 * jnp.ones((n, n, nz), dtype=jnp.float_)
+    r_diff = 0.03 * jnp.ones_like(t_diff, dtype=jnp.float_)
 
     # Boundary conditions: surface source and albedo.
-    sfc_src = 0.02 * jnp.ones((n, n), dtype=jnp.float64)
-    sfc_albedo = 0.5 * jnp.ones((n, n), dtype=jnp.float64)
+    sfc_src = 0.02 * jnp.ones((n, n), dtype=jnp.float_)
+    sfc_albedo = 0.5 * jnp.ones((n, n), dtype=jnp.float_)
 
     # ACTION
     output = monochromatic_two_stream.sw_transport(

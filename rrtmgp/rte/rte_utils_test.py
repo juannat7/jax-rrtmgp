@@ -36,7 +36,7 @@ class RteUtilsTest(unittest.TestCase):
     # SETUP
     n = 8
     dx = 0.1
-    expected_x = 0.2 + dx * jnp.arange(n, dtype=jnp.float32)
+    expected_x = 0.2 + dx * jnp.arange(n, dtype=jnp.float_)
     # expected_x = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     if not forward:
       expected_x = expected_x[::-1]
@@ -70,7 +70,7 @@ class RteUtilsTest(unittest.TestCase):
     # SETUP
     n = 8
     dx = 0.1
-    expected_x_1d = 0.2 + dx * jnp.arange(n, dtype=jnp.float32)
+    expected_x_1d = 0.2 + dx * jnp.arange(n, dtype=jnp.float_)
     # expected_x = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     if not forward:
       expected_x_1d = expected_x_1d[::-1]
@@ -87,7 +87,7 @@ class RteUtilsTest(unittest.TestCase):
 
     inputs = {'w': w, 'b': b}
     nx, ny, _ = expected_x.shape
-    init = 0.1 * jnp.ones((nx, ny), dtype=jnp.float32)
+    init = 0.1 * jnp.ones((nx, ny), dtype=jnp.float_)
 
     def f(carry, w, b):
       return w * carry + b, w * carry + b

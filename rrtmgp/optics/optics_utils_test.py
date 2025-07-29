@@ -55,30 +55,30 @@ class OpticsUtilsTest(unittest.TestCase):
   @parameterized.expand([
     # name, use_direct, coeffs, idxs, expected
     ("1D_1D", True,
-     jnp.array([1,2,3,4,5,6,7,8,9], dtype=jnp.float32),
+     jnp.array([1,2,3,4,5,6,7,8,9], dtype=jnp.float_),
      ([8,7,6,5,4,3,2,1,0],),
      np.array([9,8,7,6,5,4,3,2,1])),
     ("1D_2D", True,
-     jnp.array([1,2,3,4,5,6,7,8,9], dtype=jnp.float32),
+     jnp.array([1,2,3,4,5,6,7,8,9], dtype=jnp.float_),
      ([[8,7,6],[5,4,3],[2,1,0]],),
      np.array([[9,8,7],[6,5,4],[3,2,1]])),
     ("2D_1D", True,
-     jnp.array([[1,2,3],[4,5,6],[7,8,9]], dtype=jnp.float32),
+     jnp.array([[1,2,3],[4,5,6],[7,8,9]], dtype=jnp.float_),
      ([2,2,2,1,1,1,0,0,0],[2,1,0,2,1,0,2,1,0]),
      np.array([9,8,7,6,5,4,3,2,1])),
     ("2D_2D", True,
-     jnp.array([[1,2,3],[4,5,6],[7,8,9]], dtype=jnp.float32),
+     jnp.array([[1,2,3],[4,5,6],[7,8,9]], dtype=jnp.float_),
      ([[2,2,2],[1,1,1],[0,0,0]],[[2,1,0],[2,1,0],[2,1,0]]),
      np.array([[9,8,7],[6,5,4],[3,2,1]])),
     ("3D_3D", True,
      jnp.array([[[1,2,3],[4,5,6],[7,8,9]],
-                [[10,20,30],[40,50,60],[70,80,90]]], dtype=jnp.float32),
+                [[10,20,30],[40,50,60],[70,80,90]]], dtype=jnp.float_),
      ([[0,1,0],[1,0,1],[0,1,0]],
       [[2,2,2],[1,1,1],[0,0,0]],
       [[2,1,0],[2,1,0],[2,1,0]]),
      np.array([[9,80,7],[60,5,40],[3,20,1]])),
     ("1D_1D_einsum", False,
-     jnp.array([1,2,3,4,5,6,7,8,9], dtype=jnp.float32),
+     jnp.array([1,2,3,4,5,6,7,8,9], dtype=jnp.float_),
      ([8,7,6,5,4,3,2,1,0],),
      np.array([9,8,7,6,5,4,3,2,1]))
   ])
@@ -159,22 +159,22 @@ class OpticsUtilsTest(unittest.TestCase):
         [[10.0, 20.0, 30.0], [40.0, 50.0, 60.0], [70.0, 80.0, 90.0]],
     ])
     idx1_low = [[0, 1], [0, 1]]
-    idx1_low_weight = 0.2 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx1_low_weight = 0.2 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx1_high = [[1, 1], [1, 1]]
-    idx1_high_weight = 0.8 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx1_high_weight = 0.8 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx2_low = [[1, 2], [0, 2]]
-    idx_2_low_weight = 0.4 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_2_low_weight = 0.4 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx2_high = [[2, 2], [1, 2]]
-    idx_2_high_weight = 0.6 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_2_high_weight = 0.6 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx3_low = [[1, 2], [2, 0]]
-    idx_3_low_weight = 0.9 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_3_low_weight = 0.9 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx3_high = [[2, 2], [2, 1]]
-    idx_3_high_weight = 0.1 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_3_high_weight = 0.1 * jnp.ones((2, 2), dtype=jnp.float_)
 
     element00 = (0.2 * 0.4 * 0.9 * 5.0 +  # low, low, low
                  0.8 * 0.4 * 0.9 * 50.0 +  # high, low, low
@@ -223,22 +223,22 @@ class OpticsUtilsTest(unittest.TestCase):
         [[10.0, 20.0, 30.0], [40.0, 50.0, 60.0], [70.0, 80.0, 90.0]],
     ])
     idx1_low = [[0, 1], [0, 1]]
-    idx1_low_weight = 0.2 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx1_low_weight = 0.2 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx1_high = [[1, 1], [1, 1]]
-    idx1_high_weight = 0.8 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx1_high_weight = 0.8 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx2_low = [[1, 2], [0, 2]]
-    idx_2_low_weight = 0.4 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_2_low_weight = 0.4 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx2_high = [[2, 2], [1, 2]]
-    idx_2_high_weight = 0.6 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_2_high_weight = 0.6 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx3_low = [[1, 2], [2, 0]]
-    idx_3_low_weight = 0.9 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_3_low_weight = 0.9 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx3_high = [[2, 2], [2, 1]]
-    idx_3_high_weight = 0.1 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_3_high_weight = 0.1 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx1_weight_low = IndexAndWeight(idx1_low, idx1_low_weight)
     idx1_weight_high = IndexAndWeight(idx1_high, idx1_high_weight)

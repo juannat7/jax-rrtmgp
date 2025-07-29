@@ -127,7 +127,7 @@ class RRTMOpticsTest(unittest.TestCase):
     nz = 18  # 16 layers + halo_width of 1.
 
     # Create a linear temperature profile = [299, 298, 297, ..., 282]
-    temperature = jnp.arange(299, 281, -1, dtype=jnp.float32)
+    temperature = jnp.arange(299, 281, -1, dtype=jnp.float_)
     self.assertEqual(len(temperature), nz)
 
     # Convert from 1D to 3D array.
@@ -136,7 +136,7 @@ class RRTMOpticsTest(unittest.TestCase):
     )
 
     # ACTION
-    f_lower_bc = 299.0 * jnp.ones((n_horiz, n_horiz), dtype=jnp.float32)
+    f_lower_bc = 299.0 * jnp.ones((n_horiz, n_horiz), dtype=jnp.float_)
     temperature_bottom, temperature_top = (
         optics_base.reconstruct_face_values(temperature, f_lower_bc)
     )
@@ -162,12 +162,12 @@ class RRTMOpticsTest(unittest.TestCase):
     """Check the computed lw optical depth, albedo, and asymmetry factor."""
     # SETUP
     n = 4
-    ones = jnp.ones((n, n, n), dtype=jnp.float32)
+    ones = jnp.ones((n, n, n), dtype=jnp.float_)
 
     self.mock_major_optical_depth_fn.return_value = 0.5 * ones
     self.mock_minor_optical_depth_fn.return_value = 0.2 * ones
 
-    pressure = 1e5 * jnp.ones((n, n, n), dtype=jnp.float32)
+    pressure = 1e5 * jnp.ones((n, n, n), dtype=jnp.float_)
     temperature = 290.0 * jnp.ones_like(pressure)
     molecules = 1e24 * jnp.ones_like(pressure)
 
@@ -193,7 +193,7 @@ class RRTMOpticsTest(unittest.TestCase):
     """Check the lw optical depth, albedo, and asymmetry factor with clouds."""
     # SETUP
     n = 4
-    ones = jnp.ones((n, n, n), dtype=jnp.float32)
+    ones = jnp.ones((n, n, n), dtype=jnp.float_)
 
     self.mock_major_optical_depth_fn.return_value = 0.5 * ones
     self.mock_minor_optical_depth_fn.return_value = 0.2 * ones
@@ -203,7 +203,7 @@ class RRTMOpticsTest(unittest.TestCase):
         'asymmetry_factor': 0.12 * ones,
     }
 
-    pressure = 1e5 * jnp.ones((n, n, n), dtype=jnp.float32)
+    pressure = 1e5 * jnp.ones((n, n, n), dtype=jnp.float_)
     temperature = 290.0 * jnp.ones_like(pressure)
     molecules = 1e24 * jnp.ones_like(pressure)
     cloud_r_eff_liq = 1e-5 * jnp.ones_like(pressure)
@@ -240,7 +240,7 @@ class RRTMOpticsTest(unittest.TestCase):
     """Checks the computed sw optical depth, albedo, and asymmetry factor."""
     # SETUP
     n = 4
-    ones = jnp.ones((n, n, n), dtype=jnp.float32)
+    ones = jnp.ones((n, n, n), dtype=jnp.float_)
 
     self.mock_rayleigh_optical_depth_fn.return_value = 0.1 * ones
     self.mock_major_optical_depth_fn.return_value = 0.6 * ones
@@ -284,7 +284,7 @@ class RRTMOpticsTest(unittest.TestCase):
     """Checks the sw optical depth, albedo, and asymmetry factor with clouds."""
     # SETUP
     n = 4
-    ones = jnp.ones((n, n, n), dtype=jnp.float32)
+    ones = jnp.ones((n, n, n), dtype=jnp.float_)
 
     self.mock_rayleigh_optical_depth_fn.return_value = 0.1 * ones
     self.mock_major_optical_depth_fn.return_value = 0.6 * ones
@@ -368,7 +368,7 @@ class RRTMOpticsTest(unittest.TestCase):
 
     temperature = jnp.array(
         [430.0, 400.0, 370.0, 340.0, 310.0, 280.0, 250.0, 220.0, 190.0],
-        dtype=jnp.float32,
+        dtype=jnp.float_,
     )
     temperature = test_util.convert_to_3d_array_and_tile(
         temperature, dim=2, num_repeats=n
@@ -376,7 +376,7 @@ class RRTMOpticsTest(unittest.TestCase):
     pressure = 1e5 * jnp.ones_like(temperature)
     vmr_fields = {1: 1.2e-3 * jnp.ones_like(temperature)}
 
-    sfc_temperature = 440.0 * jnp.ones((n, n), dtype=jnp.float32)
+    sfc_temperature = 440.0 * jnp.ones((n, n), dtype=jnp.float_)
 
     # ACTION
     output = self.rrtm_lib.compute_planck_sources(
@@ -506,7 +506,7 @@ class GrayAtmosphereOpticsTest(unittest.TestCase):
     nx = ny = n = 4
     temperature = jnp.array(
         [430.0, 400.0, 370.0, 340.0, 310.0, 280.0, 250.0, 220.0, 190.0],
-        dtype=jnp.float32,
+        dtype=jnp.float_,
     )
 
     # Convert from 1D to 3D array.
@@ -514,7 +514,7 @@ class GrayAtmosphereOpticsTest(unittest.TestCase):
         temperature, dim=2, num_repeats=n
     )
 
-    sfc_temperature = 350.0 * jnp.ones((nx, ny), dtype=jnp.float32)
+    sfc_temperature = 350.0 * jnp.ones((nx, ny), dtype=jnp.float_)
 
     # Using gray atmosphere parameters:
     # {'p0': 1e5, 'alpha': 3.5, 'd0_lw': 5.5536, 'd0_sw': 0.22}.

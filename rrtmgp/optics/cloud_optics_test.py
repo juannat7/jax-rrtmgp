@@ -35,7 +35,7 @@ class CloudOpticsTest(unittest.TestCase):
         _LW_LOOKUP_TABLE_FILEPATH
     )
 
-    ones_2d = jnp.ones((2, 2), dtype=jnp.float32)
+    ones_2d = jnp.ones((2, 2), dtype=jnp.float_)
     # Fixed spectral band index.
     ibnd = 5
     # Roughness index for medium roughness.

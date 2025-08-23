@@ -20,7 +20,6 @@ from parameterized import parameterized
 from itertools import product
 from pathlib import Path
 import jax
-jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import netCDF4 as nc
 import numpy as np
@@ -32,7 +31,6 @@ from rrtmgp.optics import atmospheric_state
 from rrtmgp.optics import optics
 from rrtmgp.rte import two_stream
 
-jax.config.update('jax_enable_x64', True)
 Array: TypeAlias = jax.Array
 
 # filenames

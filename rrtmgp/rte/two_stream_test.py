@@ -18,7 +18,6 @@ from typing import TypeAlias
 import unittest
 from parameterized import parameterized
 import jax
-jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import numpy as np
 from rrtmgp import constants

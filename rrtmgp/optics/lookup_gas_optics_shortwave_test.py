@@ -69,5 +69,4 @@ class LookupGasOpticsShortwaveTest(unittest.TestCase):
 
 
 if __name__ == '__main__':
-  jax.config.update('jax_enable_x64', True)
   unittest.main()

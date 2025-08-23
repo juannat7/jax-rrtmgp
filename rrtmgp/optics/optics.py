@@ -727,7 +727,7 @@ class GrayAtmosphereOptics(optics_base.OpticsScheme):
   @property
   def solar_fraction_by_gpt(self) -> Array:
     """Mapping from g-point to the fraction of total solar radiation."""
-    return jnp.array([1.0], dtype=jnp.float32)
+    return jnp.array([1.0], dtype=jnp.float_)
 
 
 def optics_factory(

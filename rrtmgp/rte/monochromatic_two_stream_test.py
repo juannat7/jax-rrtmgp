@@ -18,7 +18,6 @@ from typing import TypeAlias
 import unittest
 from parameterized import parameterized
 import jax
-jax.config.update('jax_enable_x64', True)
 import jax.numpy as jnp
 import numpy as np
 from rrtmgp import test_util
@@ -83,7 +82,7 @@ class MonochromaticTwoStreamTest(unittest.TestCase):
     # SETUP
     n = 4
     dx = 0.1
-    planck_src_top = 0.2 + dx * jnp.arange(n, dtype=jnp.float32)
+    planck_src_top = 0.2 + dx * jnp.arange(n, dtype=jnp.float_)
 
     # Convert from 1D to 3D arrays.
     convert_to_3d = functools.partial(
@@ -94,9 +93,9 @@ class MonochromaticTwoStreamTest(unittest.TestCase):
     # Shift up to obtain the bottom face.
     planck_src_bottom = planck_src_top - dx
 
-    optical_depth = 0.03 * jnp.ones_like(planck_src_top, dtype=jnp.float32)
-    ssa = 0.01 * jnp.ones_like(planck_src_top, dtype=jnp.float32)
-    asymmetry_factor = 0.5 * jnp.ones_like(planck_src_top, dtype=jnp.float32)
+    optical_depth = 0.03 * jnp.ones_like(planck_src_top, dtype=jnp.float_)
+    ssa = 0.01 * jnp.ones_like(planck_src_top, dtype=jnp.float_)
+    asymmetry_factor = 0.5 * jnp.ones_like(planck_src_top, dtype=jnp.float_)
 
     # ACTION
     output = monochromatic_two_stream.lw_cell_source_and_properties(
@@ -105,8 +104,8 @@ class MonochromaticTwoStreamTest(unittest.TestCase):
 
     # VERIFICATION
     # Expected output obtained by running the CliMA code on the input above.
-    expected_t = 0.95177512 * jnp.ones_like(planck_src_top, dtype=jnp.float32)
-    expected_r = 1.1854426e-4 * jnp.ones_like(planck_src_top, dtype=jnp.float32)
+    expected_t = 0.95177512 * jnp.ones_like(planck_src_top, dtype=jnp.float_)
+    expected_r = 1.1854426e-4 * jnp.ones_like(planck_src_top, dtype=jnp.float_)
     expected_src_up = convert_to_3d(
         jnp.array([0.0227322, 0.03784506, 0.05295792, 0.06807115])
     )
@@ -127,9 +126,9 @@ class MonochromaticTwoStreamTest(unittest.TestCase):
     n = 4
     # Inputs in the regime |1 - k_mu^2| > EPSILON.
     # SETUP
-    optical_depth = 0.03 * jnp.ones((n, n, n), dtype=jnp.float32)
-    asymmetry_factor = 0.5 * jnp.ones_like(optical_depth, dtype=jnp.float32)
-    ssa = 0.01 * jnp.ones_like(optical_depth, dtype=jnp.float32)
+    optical_depth = 0.03 * jnp.ones((n, n, n), dtype=jnp.float_)
+    asymmetry_factor = 0.5 * jnp.ones_like(optical_depth, dtype=jnp.float_)
+    ssa = 0.01 * jnp.ones_like(optical_depth, dtype=jnp.float_)
     zenith = 1.57  # Zenith angle is slightly below pi/2.
 
     # ACTION
@@ -140,10 +139,10 @@ class MonochromaticTwoStreamTest(unittest.TestCase):
     # VERIFICATION
     # Expected output obtained by running the original RRTMGP code on the input
     # above.
-    expected_t_diff = 0.9422237 * jnp.ones_like(optical_depth, dtype=jnp.float32)
-    expected_r_diff = 1.06062755e-4 * jnp.ones_like(optical_depth, dtype=jnp.float32)
-    expected_t_dir = 4.7214041e-3 * jnp.ones_like(optical_depth, dtype=jnp.float32)
-    expected_r_dir = 4.9896492e-3 * jnp.ones_like(optical_depth, dtype=jnp.float32)
+    expected_t_diff = 0.9422237 * jnp.ones_like(optical_depth, dtype=jnp.float_)
+    expected_r_diff = 1.06062755e-4 * jnp.ones_like(optical_depth, dtype=jnp.float_)
+    expected_t_dir = 4.7214041e-3 * jnp.ones_like(optical_depth, dtype=jnp.float_)
+    expected_r_dir = 4.9896492e-3 * jnp.ones_like(optical_depth, dtype=jnp.float_)
 
     np.testing.assert_allclose(
         output['t_diff'], expected_t_diff, rtol=1e-5, atol=0
@@ -160,8 +159,8 @@ class MonochromaticTwoStreamTest(unittest.TestCase):
 
     # Inputs in the regime |1 - k_mu^2| < EPSILON.
     # SETUP
-    asymmetry_factor = 0.16116116 * jnp.ones_like(optical_depth, dtype=jnp.float32)
-    ssa = 0.2722723 * jnp.ones_like(optical_depth, dtype=jnp.float32)
+    asymmetry_factor = 0.16116116 * jnp.ones_like(optical_depth, dtype=jnp.float_)
+    ssa = 0.2722723 * jnp.ones_like(optical_depth, dtype=jnp.float_)
     zenith = 0.90439791
 
     # ACTION
@@ -172,9 +171,9 @@ class MonochromaticTwoStreamTest(unittest.TestCase):
     # VERIFICATION
     # Expected output obtained by running the original RRTMGP code on the input
     # above.
-    expected_t_diff = 0.9523814 * jnp.ones_like(optical_depth, dtype=jnp.float32)
-    expected_r_diff = 0.0048960485 * jnp.ones_like(optical_depth, dtype=jnp.float32)
-    expected_r_dir = 0.0012536654 * jnp.ones_like(optical_depth, dtype=jnp.float32)
+    expected_t_diff = 0.9523814 * jnp.ones_like(optical_depth, dtype=jnp.float_)
+    expected_r_diff = 0.0048960485 * jnp.ones_like(optical_depth, dtype=jnp.float_)
+    expected_r_dir = 0.0012536654 * jnp.ones_like(optical_depth, dtype=jnp.float_)
 
     np.testing.assert_allclose(
         output['t_diff'], expected_t_diff, rtol=1e-5, atol=0
@@ -197,15 +196,15 @@ class MonochromaticTwoStreamTest(unittest.TestCase):
     nz = 18  # 16 layers plus halo_width of 1.
 
     # Constant cell properties
-    t_dir = 0.97 * jnp.ones((n, n, nz), dtype=jnp.float32)
-    r_dir = 0.03 * jnp.ones_like(t_dir, dtype=jnp.float32)
-    optical_depth = 1.5e-3 * jnp.ones_like(t_dir, dtype=jnp.float32)
+    t_dir = 0.97 * jnp.ones((n, n, nz), dtype=jnp.float_)
+    r_dir = 0.03 * jnp.ones_like(t_dir, dtype=jnp.float_)
+    optical_depth = 1.5e-3 * jnp.ones_like(t_dir, dtype=jnp.float_)
 
     # Incident flux at the top of the atmosphere.
-    toa_flux_down = 0.8 * jnp.ones((n, n), dtype=jnp.float32)
+    toa_flux_down = 0.8 * jnp.ones((n, n), dtype=jnp.float_)
 
     # Albedo of direct radiation at the surface
-    sfc_albedo_direct = 0.2 * jnp.ones((n, n), dtype=jnp.float32)
+    sfc_albedo_direct = 0.2 * jnp.ones((n, n), dtype=jnp.float_)
 
     zenith = 2.0  # Zenith angle in radians.
 

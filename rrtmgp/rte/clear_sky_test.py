@@ -15,8 +15,9 @@
 import functools
 from typing import TypeAlias
 
-from absl.testing import absltest
-from absl.testing import parameterized
+import unittest
+from parameterized import parameterized
+from itertools import product
 from pathlib import Path
 import jax
 import jax.numpy as jnp
@@ -32,37 +33,34 @@ from rrtmgp.rte import two_stream
 
 Array: TypeAlias = jax.Array
 
+# filenames
 _VMR_GLOBAL_MEAN_FILENAME = 'rrtmgp/optics/test_data/vmr_global_means.json'
 _ATMOSPHERIC_STATE_FILENAME = 'rrtmgp/optics/test_data/clearsky_as.nc'
-_LW_LOOKUP_TABLE_FILENAME = 'rrtmgp/optics/rrtmgp_data/rrtmgp-gas-lw-g256.nc'
-_SW_LOOKUP_TABLE_FILENAME = 'rrtmgp/optics/rrtmgp_data/rrtmgp-gas-sw-g224.nc'
-_LW_LOOKUP_TABLE_COMPACT_FILENAME = 'rrtmgp/optics/rrtmgp_data/rrtmgp-gas-lw-g128.nc'
-_SW_LOOKUP_TABLE_COMPACT_FILENAME = 'rrtmgp/optics/rrtmgp_data/rrtmgp-gas-sw-g112.nc'
-_CLD_LW_LOOKUP_TABLE_FILENAME = 'rrtmgp/optics/rrtmgp_data/cloudysky_lw.nc'
-_CLD_SW_LOOKUP_TABLE_FILENAME = 'rrtmgp/optics/rrtmgp_data/cloudysky_sw.nc'
 _LW_FLUX_DOWN_REFERENCE_FILENAME = 'rrtmgp/optics/test_data/clearsky_lw_flux_dn_TwoStream.nc'
 _LW_FLUX_UP_REFERENCE_FILENAME = 'rrtmgp/optics/test_data/clearsky_lw_flux_up_TwoStream.nc'
 _SW_FLUX_DOWN_REFERENCE_FILENAME = 'rrtmgp/optics/test_data/clearsky_sw_flux_dn_TwoStream.nc'
 _SW_FLUX_UP_REFERENCE_FILENAME = 'rrtmgp/optics/test_data/clearsky_sw_flux_up_TwoStream.nc'
 
+# root for relative paths
 root = Path()
 _VMR_GLOBAL_MEAN_FILEPATH = root / _VMR_GLOBAL_MEAN_FILENAME
 _ATMOSPHERIC_STATE_FILEPATH = root / _ATMOSPHERIC_STATE_FILENAME
-_LW_LOOKUP_TABLE_FILEPATH = root / _LW_LOOKUP_TABLE_FILENAME
-_SW_LOOKUP_TABLE_FILEPATH = root / _SW_LOOKUP_TABLE_FILENAME
-_LW_LOOKUP_TABLE_COMPACT_FILEPATH = root / _LW_LOOKUP_TABLE_COMPACT_FILENAME
-_SW_LOOKUP_TABLE_COMPACT_FILEPATH = root / _SW_LOOKUP_TABLE_COMPACT_FILENAME
-_CLD_LW_LOOKUP_TABLE_FILEPATH = root / _CLD_LW_LOOKUP_TABLE_FILENAME
-_CLD_SW_LOOKUP_TABLE_FILEPATH = root / _CLD_SW_LOOKUP_TABLE_FILENAME
 _LW_FLUX_DOWN_REFERENCE_FILEPATH = root / _LW_FLUX_DOWN_REFERENCE_FILENAME
 _LW_FLUX_UP_REFERENCE_FILEPATH = root / _LW_FLUX_UP_REFERENCE_FILENAME
 _SW_FLUX_DOWN_REFERENCE_FILEPATH = root / _SW_FLUX_DOWN_REFERENCE_FILENAME
 _SW_FLUX_UP_REFERENCE_FILEPATH = root / _SW_FLUX_UP_REFERENCE_FILENAME
 
+# open netCDF files once
+_atm_ds = nc.Dataset(_ATMOSPHERIC_STATE_FILEPATH, 'r')
+_ref_lw_up_ds   = nc.Dataset(_LW_FLUX_UP_REFERENCE_FILEPATH, 'r')
+_ref_lw_down_ds = nc.Dataset(_LW_FLUX_DOWN_REFERENCE_FILEPATH, 'r')
+_ref_sw_up_ds   = nc.Dataset(_SW_FLUX_UP_REFERENCE_FILEPATH, 'r')
+_ref_sw_down_ds = nc.Dataset(_SW_FLUX_DOWN_REFERENCE_FILEPATH, 'r')
+
 
 def _remove_halos(f: Array) -> Array:
-  """Remove the halos from the output."""
-  return f[:, :, 1:-1]
+    """Remove the halos from the output."""
+    return f[:, :, 1:-1]
 
 
 def _setup_radiation_params(
@@ -70,32 +68,32 @@ def _setup_radiation_params(
     use_compact_lookup: bool,
     atmos_state_ds: nc.Dataset,
 ) -> radiative_transfer.RadiativeTransfer:
-  """Create an instance of `RadiativeTransfer`."""
-  if use_compact_lookup:
-    lw_lookup_table_nc_filepath = _LW_LOOKUP_TABLE_COMPACT_FILEPATH
-    sw_lookup_table_nc_filepath = _SW_LOOKUP_TABLE_COMPACT_FILEPATH
-  else:
-    lw_lookup_table_nc_filepath = _LW_LOOKUP_TABLE_FILEPATH
-    sw_lookup_table_nc_filepath = _SW_LOOKUP_TABLE_FILEPATH
+    """Create an instance of `RadiativeTransfer`."""
+    if use_compact_lookup:
+        lw_lookup = 'rrtmgp/optics/rrtmgp_data/rrtmgp-gas-lw-g128.nc'
+        sw_lookup = 'rrtmgp/optics/rrtmgp_data/rrtmgp-gas-sw-g112.nc'
+    else:
+        lw_lookup = 'rrtmgp/optics/rrtmgp_data/rrtmgp-gas-lw-g256.nc'
+        sw_lookup = 'rrtmgp/optics/rrtmgp_data/rrtmgp-gas-sw-g224.nc'
 
-  return radiative_transfer.RadiativeTransfer(
-      optics=radiative_transfer.OpticsParameters(
-          optics=radiative_transfer.RRTMOptics(
-              longwave_nc_filepath=lw_lookup_table_nc_filepath,
-              shortwave_nc_filepath=sw_lookup_table_nc_filepath,
-              cloud_longwave_nc_filepath=_CLD_LW_LOOKUP_TABLE_FILEPATH,
-              cloud_shortwave_nc_filepath=_CLD_SW_LOOKUP_TABLE_FILEPATH,
-          )
-      ),
-      atmospheric_state_cfg=radiative_transfer.AtmosphericStateCfg(
-          sfc_emis=atmos_state_ds['surface_emissivity'][:].data[site],
-          sfc_alb=atmos_state_ds['surface_albedo'][:].data[site],
-          zenith=np.radians(atmos_state_ds['solar_zenith_angle'][:].data[site]),
-          irrad=atmos_state_ds['total_solar_irradiance'][:].data[site],
-          toa_flux_lw=0.0,
-          vmr_global_mean_filepath=_VMR_GLOBAL_MEAN_FILEPATH,
-      ),
-  )
+    return radiative_transfer.RadiativeTransfer(
+        optics=radiative_transfer.OpticsParameters(
+            optics=radiative_transfer.RRTMOptics(
+                longwave_nc_filepath=lw_lookup,
+                shortwave_nc_filepath=sw_lookup,
+                cloud_longwave_nc_filepath='rrtmgp/optics/rrtmgp_data/cloudysky_lw.nc',
+                cloud_shortwave_nc_filepath='rrtmgp/optics/rrtmgp_data/cloudysky_sw.nc',
+            )
+        ),
+        atmospheric_state_cfg=radiative_transfer.AtmosphericStateCfg(
+            sfc_emis=atmos_state_ds['surface_emissivity'][:].data[site],
+            sfc_alb=atmos_state_ds['surface_albedo'][:].data[site],
+            zenith=np.radians(atmos_state_ds['solar_zenith_angle'][:].data[site]),
+            irrad=atmos_state_ds['total_solar_irradiance'][:].data[site],
+            toa_flux_lw=0.0,
+            vmr_global_mean_filepath=_VMR_GLOBAL_MEAN_FILEPATH,
+        ),
+    )
 
 
 def _setup_atmospheric_profiles() -> tuple[
@@ -108,226 +106,120 @@ def _setup_atmospheric_profiles() -> tuple[
     np.ndarray,
     np.ndarray,
 ]:
-  """Load vertical profiles of pressure and temperature from RFMIP."""
-  halo_width = 1
-  atmos_state_ds = nc.Dataset(_ATMOSPHERIC_STATE_FILEPATH, 'r')
+    """Load vertical profiles from netCDF."""
+    ds = _atm_ds
+    halo = 1
+    p_int = np.flip(ds['pres_layer'][:].data, axis=-1)
+    p_lev = np.flip(ds['pres_level'][:].data, axis=-1)
 
-  # Reverse order of the profiles so they correspond to increasing altitude.
-  p_internal = np.flip(atmos_state_ds['pres_layer'][:].data, axis=-1)
-  pres_level = np.flip(atmos_state_ds['pres_level'][:].data, axis=-1)
-  # Shape of p_internal is (100, 60) and shape of pres_level is (100, 61).
+    pad2 = ((0, 0), (halo, halo))
+    pad2_lev = ((0, 0), (halo, halo-1))
+    pressure = np.pad(p_int, pad2, mode='edge')
+    pressure_level = np.pad(p_lev, pad2_lev, mode='edge')
 
-  paddings_2d = ((0, 0), (halo_width, halo_width))
-  paddings_3d = ((0, 0), (0, 0), (halo_width, halo_width))
-  pressure = np.pad(p_internal, paddings_2d, mode='edge')
-  pressure_level = np.pad(pres_level, ((0, 0), (halo_width, halo_width - 1)))
-  # Shape of pressure is (100, 62) and shape of pressure_level is (100, 62).
+    t_int = np.flip(ds['temp_layer'][:].data, axis=-1)
+    t_lev = np.flip(ds['temp_level'][:].data, axis=-1)
+    nx, ny, nz = t_int.shape
+    nzh = nz + 2*halo
+    temperature = np.zeros((nx, ny, nzh), dtype=jnp.float_)
+    temperature[:, :, halo:-halo] = t_int
+    temperature[:, :, 0] =        2*t_lev[:, :, 0]  - t_int[:, :, 0]
+    temperature[:, :, -1] = 2*t_lev[:, :, -1] - t_int[:, :, -1]
 
-  # shape of temperature_internal is (18, 100, 60)
-  temp_internal = np.flip(atmos_state_ds['temp_layer'][:].data, axis=-1)
-  # shape of temperature_level is (18, 100, 61)
-  temp_level = np.flip(atmos_state_ds['temp_level'][:].data, axis=-1)
+    temp_lev3 = np.zeros_like(temperature)
+    temp_lev3[:, :, 1:] = t_lev
+    temp_lev3[:, :, 0]  = temperature[:, :, 0]
 
-  # Fill in halos by extrapolating from face (temp_level) and node values
-  # (temp_internal).
-  nx, ny, nz = temp_internal.shape  # 18, 100, 60
-  nz_with_halos = nz + 2 * halo_width
-  temperature = np.zeros((nx, ny, nz_with_halos), dtype=jnp.float_)
-  temperature[:, :, halo_width:-halo_width] = temp_internal
-  temperature[:, :, 0] = 2 * temp_level[:, :, 0] - temp_internal[:, :, 0]
-  temperature[:, :, -1] = 2 * temp_level[:, :, -1] - temp_internal[:, :, -1]
+    pad3 = ((0,0),(0,0),(halo, halo))
+    h2o = np.pad(np.flip(ds['water_vapor'][:].data, axis=-1), pad3, mode='edge')
+    o3  = np.pad(np.flip(ds['ozone'][:].data, axis=-1), pad3, mode='edge')
 
-  temperature_level = np.zeros_like(temperature)
-  temperature_level[:, :, 1:] = temp_level
-  # Fill in halo with same halo value as in `temperature`.
-  temperature_level[:, :, 0] = temperature[:, :, 0]
-
-  h2o_vmr = np.pad(
-      np.flip(atmos_state_ds['water_vapor'][:].data, axis=-1),
-      paddings_3d,
-      mode='edge',
-  )
-  o3_vmr = np.pad(
-      np.flip(atmos_state_ds['ozone'][:].data, axis=-1),
-      paddings_3d,
-      mode='edge',
-  )
-
-  sfc_temperature = atmos_state_ds['surface_temperature'][:].data
-  # shape of sfc_temperature is (18, 100).
-
-  # Here `_level` means these are the values on faces.
-  return (
-      atmos_state_ds,
-      pressure,
-      pressure_level,
-      temperature,
-      temperature_level,
-      h2o_vmr,
-      o3_vmr,
-      sfc_temperature,
-  )
+    sfc_t = ds['surface_temperature'][:].data
+    return (ds, pressure, pressure_level, temperature, temp_lev3, h2o, o3, sfc_t)
 
 
-def _load_expected_data() -> (
-    tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]
-):
-  """Loads the expected fluxes from the reference netCDF files."""
-  reference_lw_up_ds = nc.Dataset(_LW_FLUX_UP_REFERENCE_FILEPATH, 'r')
-  reference_lw_down_ds = nc.Dataset(_LW_FLUX_DOWN_REFERENCE_FILEPATH, 'r')
-  reference_sw_up_ds = nc.Dataset(_SW_FLUX_UP_REFERENCE_FILEPATH, 'r')
-  reference_sw_down_ds = nc.Dataset(_SW_FLUX_DOWN_REFERENCE_FILEPATH, 'r')
+def _load_expected_data() -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Loads expected fluxes from reference files."""
+    up_ds = _ref_lw_up_ds
+    dn_ds = _ref_lw_down_ds
+    su_ds = _ref_sw_up_ds
+    sd_ds = _ref_sw_down_ds
 
-  halo_width = 1
-  paddings = ((0, 0), (0, 0), (halo_width, halo_width - 1))
-
-  lw_flux_up = np.pad(
-      np.flip(reference_lw_up_ds['rlu'][:].data, axis=-1), paddings
-  )
-  lw_flux_down = np.pad(
-      np.flip(reference_lw_down_ds['rld'][:].data, axis=-1), paddings
-  )
-  sw_flux_up = np.pad(
-      np.flip(reference_sw_up_ds['rsu'][:].data, axis=-1), paddings
-  )
-  sw_flux_down = np.pad(
-      np.flip(reference_sw_down_ds['rsd'][:].data, axis=-1), paddings
-  )
-  return lw_flux_up, lw_flux_down, sw_flux_up, sw_flux_down
+    halo = 1
+    pads = ((0,0),(0,0),(halo, halo-1))
+    lw_up = np.pad(np.flip(up_ds['rlu'][:].data, axis=-1), pads)
+    lw_dn = np.pad(np.flip(dn_ds['rld'][:].data, axis=-1), pads)
+    sw_up = np.pad(np.flip(su_ds['rsu'][:].data, axis=-1), pads)
+    sw_dn = np.pad(np.flip(sd_ds['rsd'][:].data, axis=-1), pads)
+    return lw_up, lw_dn, sw_up, sw_dn
 
 
 def _air_molecules_per_area(p_bottom: Array, vmr_h2o: Array) -> Array:
-  """Compute the number of molecules in an atmospheric grid cell per area."""
-  dp = kernel_ops.forward_difference(p_bottom, dim=2)
-  mol_m_air = constants.DRY_AIR_MOL_MASS + constants.WATER_MOL_MASS * vmr_h2o
-  return -(dp / constants.G) * constants.AVOGADRO / mol_m_air
+    dp = kernel_ops.forward_difference(p_bottom, dim=2)
+    mol = constants.DRY_AIR_MOL_MASS + constants.WATER_MOL_MASS * vmr_h2o
+    return -(dp/constants.G)*constants.AVOGADRO/mol
 
 
-class ClearSkyTest(parameterized.TestCase):
+class ClearSkyTest(unittest.TestCase):
 
-  @parameterized.product(
-      rfmip_site=list(range(10)),
-      use_compact_lookup=[True, False],
-      use_scan=[True, False],
-  )
-  def test_two_stream_solver_with_clear_sky(
-      self, rfmip_site: int, use_compact_lookup: bool, use_scan: bool
-  ):
-    rfmip_expt_id = 0
+    @parameterized.expand([
+        (site, uc, us) for site, uc, us in product(range(10), [True, False], [True, False])
+    ])
+    def test_two_stream_solver_with_clear_sky(
+        self, rfmip_site: int, use_compact_lookup: bool, use_scan: bool
+    ):
+        rfmip_expt_id = 0
+        (
+            ds,
+            pressure_allsites,
+            pressure_level_allsites,
+            temperature_allsites,
+            _,
+            h2o_allsites,
+            o3_allsites,
+            sfc_t_allsites,
+        ) = _setup_atmospheric_profiles()
 
-    (
-        atmos_state_ds,
-        pressure_allsites,
-        pressure_level_allsites,
-        temperature_allsites,
-        _,
-        h2o_vmr_allsites,
-        o3_vmr_allsites,
-        sfc_temperature_allsites,
-    ) = _setup_atmospheric_profiles()
-    # Pressure & pressure_level are 2D arrays where the last dimension is
-    # the vertical dimension.  Temperature & the vmr data are 3D arrays where
-    # the last dimension is the vertical dimension.
+        radiation_params = _setup_radiation_params(
+            rfmip_site, use_compact_lookup, ds
+        )
+        atmos_state = atmospheric_state.from_config(
+            radiation_params.atmospheric_state_cfg
+        )
+        optics_lib = optics.optics_factory(radiation_params.optics, atmos_state.vmr)
 
-    radiation_params = _setup_radiation_params(
-        rfmip_site, use_compact_lookup, atmos_state_ds
-    )
-    atmos_state = atmospheric_state.from_config(
-        radiation_params.atmospheric_state_cfg
-    )
-    optics_lib = optics.optics_factory(radiation_params.optics, atmos_state.vmr)
+        # prepare inputs
+        n_horiz = 2
+        conv3d = functools.partial(
+            test_util.convert_to_3d_array_and_tile, dim=2, num_repeats=n_horiz
+        )
+        sfc_tv = sfc_t_allsites[rfmip_expt_id, rfmip_site]
+        sfc_t = sfc_tv * jnp.ones((n_horiz, n_horiz), dtype=jnp.float_)
+        p = conv3d(pressure_allsites[rfmip_site, :])
+        pl = conv3d(pressure_level_allsites[rfmip_site, :])
+        t  = conv3d(temperature_allsites[rfmip_expt_id, rfmip_site, :])
+        h2 = conv3d(h2o_allsites[rfmip_expt_id, rfmip_site, :])
+        o3 = conv3d(o3_allsites[rfmip_expt_id, rfmip_site, :])
+        mol = _air_molecules_per_area(pl, h2)
+        vmr = {'h2o': h2, 'o3': o3}
 
-    # Model inputs.
-    n_horiz = 2
-    convert_to_3d = functools.partial(
-        test_util.convert_to_3d_array_and_tile, dim=2, num_repeats=n_horiz
-    )
+        lw = two_stream.solve_lw(p, t, mol, optics_lib, atmos_state, vmr, sfc_t, use_scan=use_scan)
+        sw = two_stream.solve_sw(p, t, mol, optics_lib, atmos_state, vmr, use_scan=use_scan)
 
-    sfc_temperature_value = sfc_temperature_allsites[rfmip_expt_id, rfmip_site]
-    sfc_temperature = sfc_temperature_value * jnp.ones(
-        (n_horiz, n_horiz), dtype=jnp.float_
-    )
-    p = convert_to_3d(pressure_allsites[rfmip_site, :])
-    pressure_level = convert_to_3d(pressure_level_allsites[rfmip_site, :])
-    temperature = convert_to_3d(
-        temperature_allsites[rfmip_expt_id, rfmip_site, :]
-    )
-    h2o_vmr = convert_to_3d(h2o_vmr_allsites[rfmip_expt_id, rfmip_site, :])
-    o3_vmr = convert_to_3d(o3_vmr_allsites[rfmip_expt_id, rfmip_site, :])
-    molecules = _air_molecules_per_area(pressure_level, h2o_vmr)
-    vmr_fields = {'h2o': h2o_vmr, 'o3': o3_vmr}
+        lw_up, lw_dn, sw_up, sw_dn = _load_expected_data()
+        exp_up_lw = conv3d(lw_up[rfmip_expt_id, rfmip_site, :])
+        exp_dn_lw = conv3d(lw_dn[rfmip_expt_id, rfmip_site, :])
+        exp_up_sw = conv3d(sw_up[rfmip_expt_id, rfmip_site, :])
+        exp_dn_sw = conv3d(sw_dn[rfmip_expt_id, rfmip_site, :])
 
-    # ACTION
-    lw_fluxes = two_stream.solve_lw(
-        p,
-        temperature,
-        molecules,
-        optics_lib,
-        atmos_state,
-        vmr_fields,
-        sfc_temperature,
-        use_scan=use_scan,
-    )
-    sw_fluxes = two_stream.solve_sw(
-        p,
-        temperature,
-        molecules,
-        optics_lib,
-        atmos_state,
-        vmr_fields,
-        use_scan=use_scan,
-    )
+        atol=0.2
+        np.testing.assert_allclose(_remove_halos(lw['flux_down']), _remove_halos(exp_dn_lw), rtol=1e-2, atol=atol)
+        np.testing.assert_allclose(_remove_halos(lw['flux_up']),   _remove_halos(exp_up_lw), rtol=7e-3, atol=atol)
 
-    # VERIFICATION
-    (
-        expected_lw_flux_up,
-        expected_lw_flux_down,
-        expected_sw_flux_up,
-        expected_sw_flux_down,
-    ) = _load_expected_data()
-
-    expected_flux_up_lw = convert_to_3d(
-        expected_lw_flux_up[rfmip_expt_id, rfmip_site, :]
-    )
-    expected_flux_down_lw = convert_to_3d(
-        expected_lw_flux_down[rfmip_expt_id, rfmip_site, :]
-    )
-    expected_flux_up_sw = convert_to_3d(
-        expected_sw_flux_up[rfmip_expt_id, rfmip_site, :]
-    )
-    expected_flux_down_sw = convert_to_3d(
-        expected_sw_flux_down[rfmip_expt_id, rfmip_site, :]
-    )
-
-    atol = 0.2
-    np.testing.assert_allclose(
-        _remove_halos(lw_fluxes['flux_down']),
-        _remove_halos(expected_flux_down_lw),
-        rtol=1e-2,
-        atol=atol,
-    )
-    np.testing.assert_allclose(
-        _remove_halos(lw_fluxes['flux_up']),
-        _remove_halos(expected_flux_up_lw),
-        rtol=7e-3,
-        atol=atol,
-    )
-
-    rtol = 7e-3 if use_compact_lookup else 1e-3
-    np.testing.assert_allclose(
-        _remove_halos(sw_fluxes['flux_down']),
-        _remove_halos(expected_flux_down_sw),
-        rtol=rtol,
-        atol=atol,
-    )
-    np.testing.assert_allclose(
-        _remove_halos(sw_fluxes['flux_up']),
-        _remove_halos(expected_flux_up_sw),
-        rtol=rtol,
-        atol=atol,
-    )
+        rtol = 7e-3 if use_compact_lookup else 1e-3
+        np.testing.assert_allclose(_remove_halos(sw['flux_down']), _remove_halos(exp_dn_sw), rtol=rtol, atol=atol)
+        np.testing.assert_allclose(_remove_halos(sw['flux_up']),   _remove_halos(exp_up_sw), rtol=rtol, atol=atol)
 
 
 if __name__ == '__main__':
-  jax.config.update('jax_enable_x64', True)
-  absltest.main()
+    unittest.main()

@@ -6,9 +6,10 @@ requires-python = ">=3.11"
 version = "0.1"
 license = {file = "LICENSE"}
 authors = [
-  {name = "parkerjeff", email="parkerjeff@google.com"},
-  {name = "dwatsonparris", email="dwatsonparris@ucsd.edu"}
-  ]
+    {name = "parkerjeff", email="parkerjeff@google.com"},
+    {name = "dwatsonparris", email="dwatsonparris@ucsd.edu"},
+    {name = "juannathaniel", email="jn2808@columbia.edu"}
+]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -24,12 +25,12 @@ dependencies = [
     "jax",
     "netCDF4",
     "numpy",
-    ]
+]
 
-    [project.optional-dependencies]
-    dev = [
-      "pytest",
-    ]
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "parameterized"
 ]
 
 [project.urls]

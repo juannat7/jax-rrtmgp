@@ -14,8 +14,9 @@
 
 from typing import TypeAlias
 
-from absl.testing import absltest
-from absl.testing import parameterized
+import unittest
+from parameterized import parameterized
+from itertools import product
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -24,17 +25,17 @@ from rrtmgp.rte import rte_utils
 Array: TypeAlias = jax.Array
 
 
-class RteUtilsTest(parameterized.TestCase):
+class RteUtilsTest(unittest.TestCase):
 
-  @parameterized.product(
-      forward=[True, False],
-      use_scan=[True, False],
-  )
+  @parameterized.expand([
+    (fwd, use_scan)
+    for fwd, use_scan in product([True, False], [True, False])
+  ])
   def test_recurrent_op_1d(self, forward: bool, use_scan: bool):
     # SETUP
     n = 8
     dx = 0.1
-    expected_x = 0.2 + dx * jnp.arange(n, dtype=jnp.float32)
+    expected_x = 0.2 + dx * jnp.arange(n, dtype=jnp.float_)
     # expected_x = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     if not forward:
       expected_x = expected_x[::-1]
@@ -60,15 +61,15 @@ class RteUtilsTest(parameterized.TestCase):
     # VERIFICATION
     np.testing.assert_allclose(output, expected_x, rtol=1e-5, atol=1e-5)
 
-  @parameterized.product(
-      forward=[True, False],
-      use_scan=[True, False],
-  )
+  @parameterized.expand([
+    (fwd, use_scan)
+    for fwd, use_scan in product([True, False], [True, False])
+  ])
   def test_recurrent_op(self, forward: bool, use_scan: bool):
     # SETUP
     n = 8
     dx = 0.1
-    expected_x_1d = 0.2 + dx * jnp.arange(n, dtype=jnp.float32)
+    expected_x_1d = 0.2 + dx * jnp.arange(n, dtype=jnp.float_)
     # expected_x = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     if not forward:
       expected_x_1d = expected_x_1d[::-1]
@@ -85,7 +86,7 @@ class RteUtilsTest(parameterized.TestCase):
 
     inputs = {'w': w, 'b': b}
     nx, ny, _ = expected_x.shape
-    init = 0.1 * jnp.ones((nx, ny), dtype=jnp.float32)
+    init = 0.1 * jnp.ones((nx, ny), dtype=jnp.float_)
 
     def f(carry, w, b):
       return w * carry + b, w * carry + b
@@ -101,4 +102,4 @@ class RteUtilsTest(parameterized.TestCase):
 
 
 if __name__ == '__main__':
-  absltest.main()
+  unittest.main()

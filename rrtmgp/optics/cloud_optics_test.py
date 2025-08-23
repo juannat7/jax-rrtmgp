@@ -27,7 +27,7 @@ root = Path()
 _LW_LOOKUP_TABLE_FILEPATH = root / _LW_LOOKUP_TABLE_FILENAME
 
 
-class CloudOpticsTest(absltest.TestCase):
+class CloudOpticsTest(unittest.TestCase):
 
   def test_compute_optical_properties(self):
     """Checks the cloud optics calculations of optical depth, `ssa`, and `g`."""
@@ -35,7 +35,7 @@ class CloudOpticsTest(absltest.TestCase):
         _LW_LOOKUP_TABLE_FILEPATH
     )
 
-    ones_2d = jnp.ones((2, 2), dtype=jnp.float32)
+    ones_2d = jnp.ones((2, 2), dtype=jnp.float_)
     # Fixed spectral band index.
     ibnd = 5
     # Roughness index for medium roughness.
@@ -178,4 +178,4 @@ class CloudOpticsTest(absltest.TestCase):
 
 
 if __name__ == '__main__':
-  absltest.main()
+  unittest.main()

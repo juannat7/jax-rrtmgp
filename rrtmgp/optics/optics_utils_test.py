@@ -17,8 +17,8 @@
 import collections
 from typing import TypeAlias
 
-from absl.testing import absltest
-from absl.testing import parameterized
+import unittest
+from parameterized import parameterized
 from pathlib import Path
 import jax
 import jax.numpy as jnp
@@ -49,63 +49,50 @@ def assert_interpolant_allclose(i1: Interpolant, i2: Interpolant):
   )
 
 
-class OpticsUtilsTest(parameterized.TestCase):
+class OpticsUtilsTest(unittest.TestCase):
 
-  @parameterized.parameters(True, False)
-  def test_lookup_values(self, use_direct_indexing: bool):
-    """Tests the `lookup_values` operation with different tensor shapes."""
-    if use_direct_indexing:
-      # Use direct indexing for lookup.
-      lookup_fn = optics_utils.lookup_values_direct_indexing
-    else:
-      # Use one-hot vectors and einsum for lookup via matrix multiplication.
-      lookup_fn = optics_utils.lookup_values
-
-    with self.subTest('1DCoeffs1DIndex'):
-      coeffs = jnp.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0])
-      idx = [8, 7, 6, 5, 4, 3, 2, 1, 0]
-      expected = np.array([9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0])
-      result = lookup_fn(coeffs, (idx,))
-      np.testing.assert_equal(result, expected)
-
-    with self.subTest('1DCoeffs2DIndex'):
-      coeffs = jnp.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0])
-      idx = [[8, 7, 6], [5, 4, 3], [2, 1, 0]]
-      expected = np.array([[9.0, 8.0, 7.0], [6.0, 5.0, 4.0], [3.0, 2.0, 1.0]])
-      result = lookup_fn(coeffs, (idx,))
-      np.testing.assert_equal(result, expected)
-
-    with self.subTest('2DCoeffs1DIndex'):
-      coeffs = jnp.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
-      idx0 = [2, 2, 2, 1, 1, 1, 0, 0, 0]
-      idx1 = [2, 1, 0, 2, 1, 0, 2, 1, 0]
-      expected = np.array([9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0])
-      result = lookup_fn(coeffs, (idx0, idx1))
-      np.testing.assert_equal(result, expected)
-
-    with self.subTest('2DCoeffs2DIndex'):
-      coeffs = jnp.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
-      idx0 = [[2, 2, 2], [1, 1, 1], [0, 0, 0]]
-      idx1 = [[2, 1, 0], [2, 1, 0], [2, 1, 0]]
-      expected = np.array([[9.0, 8.0, 7.0], [6.0, 5.0, 4.0], [3.0, 2.0, 1.0]])
-      result = lookup_fn(coeffs, (idx0, idx1))
-      np.testing.assert_equal(result, expected)
-
-    with self.subTest('3DCoeffs3DIndex'):
-      coeffs = jnp.array([
-          [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]],
-          [[10.0, 20.0, 30.0], [40.0, 50.0, 60.0], [70.0, 80.0, 90.0]],
-      ])
-      idx0 = [[0, 1, 0], [1, 0, 1], [0, 1, 0]]
-      idx1 = [[2, 2, 2], [1, 1, 1], [0, 0, 0]]
-      idx2 = [[2, 1, 0], [2, 1, 0], [2, 1, 0]]
-
-      expected = np.array(
-          [[9.0, 80.0, 7.0], [60.0, 5.0, 40.0], [3.0, 20.0, 1.0]]
+  @parameterized.expand([
+    # name, use_direct, coeffs, idxs, expected
+    ("1D_1D", True,
+     jnp.array([1,2,3,4,5,6,7,8,9], dtype=jnp.float_),
+     ([8,7,6,5,4,3,2,1,0],),
+     np.array([9,8,7,6,5,4,3,2,1])),
+    ("1D_2D", True,
+     jnp.array([1,2,3,4,5,6,7,8,9], dtype=jnp.float_),
+     ([[8,7,6],[5,4,3],[2,1,0]],),
+     np.array([[9,8,7],[6,5,4],[3,2,1]])),
+    ("2D_1D", True,
+     jnp.array([[1,2,3],[4,5,6],[7,8,9]], dtype=jnp.float_),
+     ([2,2,2,1,1,1,0,0,0],[2,1,0,2,1,0,2,1,0]),
+     np.array([9,8,7,6,5,4,3,2,1])),
+    ("2D_2D", True,
+     jnp.array([[1,2,3],[4,5,6],[7,8,9]], dtype=jnp.float_),
+     ([[2,2,2],[1,1,1],[0,0,0]],[[2,1,0],[2,1,0],[2,1,0]]),
+     np.array([[9,8,7],[6,5,4],[3,2,1]])),
+    ("3D_3D", True,
+     jnp.array([[[1,2,3],[4,5,6],[7,8,9]],
+                [[10,20,30],[40,50,60],[70,80,90]]], dtype=jnp.float_),
+     ([[0,1,0],[1,0,1],[0,1,0]],
+      [[2,2,2],[1,1,1],[0,0,0]],
+      [[2,1,0],[2,1,0],[2,1,0]]),
+     np.array([[9,80,7],[60,5,40],[3,20,1]])),
+    ("1D_1D_einsum", False,
+     jnp.array([1,2,3,4,5,6,7,8,9], dtype=jnp.float_),
+     ([8,7,6,5,4,3,2,1,0],),
+     np.array([9,8,7,6,5,4,3,2,1]))
+  ])
+  
+  def test_lookup_values(self, name, use_direct_indexing, coeffs, idxs, expected):
+      lookup_fn = (
+          optics_utils.lookup_values_direct_indexing
+          if use_direct_indexing else optics_utils.lookup_values
       )
-      result = lookup_fn(coeffs, (idx0, idx1, idx2))
-      np.testing.assert_equal(result, expected)
-
+      result = lookup_fn(coeffs, idxs)
+      np.testing.assert_equal(
+          result, expected, f"{name} failed for " +
+          ("direct" if use_direct_indexing else "einsum")
+      )
+      
   def test_evaluate_weighted_lookup(self):
     """Test whether the `weighted_lookup` yields the correct scaled values."""
     coeffs = jnp.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0])
@@ -157,7 +144,7 @@ class OpticsUtilsTest(parameterized.TestCase):
       )
       assert_interpolant_allclose(interpolant, expected_interpolant_offset)
 
-  @parameterized.parameters(True, False)
+  @parameterized.expand([(True,), (False,)])
   def test_interpolate(self, use_optimized_interpolation: bool):
     """Tests `interpolate` on a given lookup array and list of interpolants."""
     # SETUP
@@ -171,22 +158,22 @@ class OpticsUtilsTest(parameterized.TestCase):
         [[10.0, 20.0, 30.0], [40.0, 50.0, 60.0], [70.0, 80.0, 90.0]],
     ])
     idx1_low = [[0, 1], [0, 1]]
-    idx1_low_weight = 0.2 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx1_low_weight = 0.2 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx1_high = [[1, 1], [1, 1]]
-    idx1_high_weight = 0.8 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx1_high_weight = 0.8 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx2_low = [[1, 2], [0, 2]]
-    idx_2_low_weight = 0.4 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_2_low_weight = 0.4 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx2_high = [[2, 2], [1, 2]]
-    idx_2_high_weight = 0.6 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_2_high_weight = 0.6 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx3_low = [[1, 2], [2, 0]]
-    idx_3_low_weight = 0.9 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_3_low_weight = 0.9 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx3_high = [[2, 2], [2, 1]]
-    idx_3_high_weight = 0.1 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_3_high_weight = 0.1 * jnp.ones((2, 2), dtype=jnp.float_)
 
     element00 = (0.2 * 0.4 * 0.9 * 5.0 +  # low, low, low
                  0.8 * 0.4 * 0.9 * 50.0 +  # high, low, low
@@ -219,9 +206,9 @@ class OpticsUtilsTest(parameterized.TestCase):
 
     # VERIFICATION
     self.assertEqual(interpolated_values.shape, (2, 2))
-    self.assertEqual(interpolated_values[0, 0], element00)
+    self.assertEqual(np.float32(interpolated_values[0, 0]), np.float32(element00))
 
-  @parameterized.parameters(True, False)
+  @parameterized.expand([(True,), (False,)])
   def test_interpolate_with_dependency(self, use_optimized_interpolation: bool):
     """Tests `interpolate` on a given lookup tensor and list of interpolants."""
     # SETUP
@@ -235,22 +222,22 @@ class OpticsUtilsTest(parameterized.TestCase):
         [[10.0, 20.0, 30.0], [40.0, 50.0, 60.0], [70.0, 80.0, 90.0]],
     ])
     idx1_low = [[0, 1], [0, 1]]
-    idx1_low_weight = 0.2 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx1_low_weight = 0.2 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx1_high = [[1, 1], [1, 1]]
-    idx1_high_weight = 0.8 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx1_high_weight = 0.8 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx2_low = [[1, 2], [0, 2]]
-    idx_2_low_weight = 0.4 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_2_low_weight = 0.4 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx2_high = [[2, 2], [1, 2]]
-    idx_2_high_weight = 0.6 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_2_high_weight = 0.6 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx3_low = [[1, 2], [2, 0]]
-    idx_3_low_weight = 0.9 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_3_low_weight = 0.9 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx3_high = [[2, 2], [2, 1]]
-    idx_3_high_weight = 0.1 * jnp.ones((2, 2), dtype=jnp.float32)
+    idx_3_high_weight = 0.1 * jnp.ones((2, 2), dtype=jnp.float_)
 
     idx1_weight_low = IndexAndWeight(idx1_low, idx1_low_weight)
     idx1_weight_high = IndexAndWeight(idx1_high, idx1_high_weight)
@@ -296,38 +283,35 @@ class OpticsUtilsTest(parameterized.TestCase):
         interpolated_values[0, 0], expected_element00, delta=1e-4
     )
 
-  @parameterized.parameters(True, False)
+  @parameterized.expand([
+      (True,  'IncreasingOrder'),
+      (False, 'DecreasingOrder'),
+  ])
   def test_recover_original_values_via_interpolation(
-      self, use_optimized_interpolation: bool
+      self, use_optimized_interpolation, case_name
   ):
-    """Tests whether interpolation recovers original values."""
-    if use_optimized_interpolation:
-      interpolate_fn = optics_utils.interpolate_optimized
-    else:
-      interpolate_fn = optics_utils.interpolate_orig
-    gas_optics = lookup_gas_optics_longwave.from_nc_file(
-        _LW_LOOKUP_TABLE_FILEPATH
-    )
-    t_ref = gas_optics.t_ref
-    reversed_t_ref = jnp.flip(t_ref, axis=0)
-
-    key = jax.random.key(42)
-    t = jax.random.uniform(
-        key, (20, 20), minval=jnp.min(t_ref), maxval=jnp.max(t_ref)
-    )
-
-    with self.subTest('IncreasingOrderRefValues'):
-      interpolant = optics_utils.create_linear_interpolant(t, t_ref)
+      gas_optics = lookup_gas_optics_longwave.from_nc_file(
+          _LW_LOOKUP_TABLE_FILEPATH
+      )
+      t_ref = gas_optics.t_ref
+      data_key = {'IncreasingOrder': t_ref,
+                  'DecreasingOrder': jnp.flip(t_ref, 0)}[case_name]
+      key = jax.random.PRNGKey(42)
+      t = jax.random.uniform(
+          key, t_ref.shape, minval=jnp.min(t_ref), maxval=jnp.max(t_ref)
+      )
+      interpolate_fn = (
+          optics_utils.interpolate_optimized
+          if use_optimized_interpolation else optics_utils.interpolate_orig
+      )
+      interpolant = optics_utils.create_linear_interpolant(t, data_key)
       interpolant_fns = OrderedDict({'x': lambda: interpolant})
-      interpolated = interpolate_fn(t_ref, interpolant_fns)
-      np.testing.assert_allclose(interpolated, t, rtol=2e-7)
-
-    with self.subTest('DecreasingOrderRefValues'):
-      interpolant = optics_utils.create_linear_interpolant(t, reversed_t_ref)
-      interpolant_fns = OrderedDict({'x': lambda: interpolant})
-      interpolated = interpolate_fn(reversed_t_ref, interpolant_fns)
-      np.testing.assert_allclose(interpolated, t, rtol=2e-7)
-
+      interpolated = interpolate_fn(data_key, interpolant_fns)
+      np.testing.assert_allclose(
+          interpolated, t, rtol=2e-7,
+          err_msg=f"{case_name} failed for " +
+                  ("optimized" if use_optimized_interpolation else "orig")
+      )
 
 if __name__ == '__main__':
-  absltest.main()
+  unittest.main()

@@ -16,10 +16,8 @@
 
 import functools
 from typing import TypeAlias
+import unittest
 from unittest import mock
-
-from absl.testing import absltest
-from absl.testing import parameterized
 from pathlib import Path
 import jax
 import jax.numpy as jnp
@@ -76,7 +74,7 @@ def _remove_halos(f: Array) -> Array:
   return f[:, :, 1:-1]
 
 
-class RRTMOpticsTest(parameterized.TestCase):
+class RRTMOpticsTest(unittest.TestCase):
 
   def setUp(self):
     super().setUp()
@@ -95,28 +93,28 @@ class RRTMOpticsTest(parameterized.TestCase):
     self.rrtm_lib = optics.RRTMOptics(self.vmr_lib, radiation_params_rrtm)
 
     # Create mock functions for use in tests.
-    self.mock_major_optical_depth_fn = self.enter_context(
+    self.mock_major_optical_depth_fn = self.enterContext(
         mock.patch.object(
             gas_optics, 'compute_major_optical_depth', autospec=True
         )
     )
-    self.mock_minor_optical_depth_fn = self.enter_context(
+    self.mock_minor_optical_depth_fn = self.enterContext(
         mock.patch.object(
             gas_optics, 'compute_minor_optical_depth', autospec=True
         )
     )
-    self.mock_rayleigh_optical_depth_fn = self.enter_context(
+    self.mock_rayleigh_optical_depth_fn = self.enterContext(
         mock.patch.object(
             gas_optics, 'compute_rayleigh_optical_depth', autospec=True
         )
     )
-    self.mock_planck_fraction_fn = self.enter_context(
+    self.mock_planck_fraction_fn = self.enterContext(
         mock.patch.object(gas_optics, 'compute_planck_fraction', autospec=True)
     )
-    self.mock_planck_source_fn = self.enter_context(
+    self.mock_planck_source_fn = self.enterContext(
         mock.patch.object(gas_optics, 'compute_planck_sources', autospec=True)
     )
-    self.mock_cloud_optical_props_fn = self.enter_context(
+    self.mock_cloud_optical_props_fn = self.enterContext(
         mock.patch.object(
             cloud_optics, 'compute_optical_properties', autospec=True
         )
@@ -129,8 +127,8 @@ class RRTMOpticsTest(parameterized.TestCase):
     nz = 18  # 16 layers + halo_width of 1.
 
     # Create a linear temperature profile = [299, 298, 297, ..., 282]
-    temperature = jnp.arange(299, 281, -1, dtype=jnp.float32)
-    self.assertLen(temperature, nz)
+    temperature = jnp.arange(299, 281, -1, dtype=jnp.float_)
+    self.assertEqual(len(temperature), nz)
 
     # Convert from 1D to 3D array.
     temperature = test_util.convert_to_3d_array_and_tile(
@@ -138,7 +136,7 @@ class RRTMOpticsTest(parameterized.TestCase):
     )
 
     # ACTION
-    f_lower_bc = 299.0 * jnp.ones((n_horiz, n_horiz), dtype=jnp.float32)
+    f_lower_bc = 299.0 * jnp.ones((n_horiz, n_horiz), dtype=jnp.float_)
     temperature_bottom, temperature_top = (
         optics_base.reconstruct_face_values(temperature, f_lower_bc)
     )
@@ -164,12 +162,12 @@ class RRTMOpticsTest(parameterized.TestCase):
     """Check the computed lw optical depth, albedo, and asymmetry factor."""
     # SETUP
     n = 4
-    ones = jnp.ones((n, n, n), dtype=jnp.float32)
+    ones = jnp.ones((n, n, n), dtype=jnp.float_)
 
     self.mock_major_optical_depth_fn.return_value = 0.5 * ones
     self.mock_minor_optical_depth_fn.return_value = 0.2 * ones
 
-    pressure = 1e5 * jnp.ones((n, n, n), dtype=jnp.float32)
+    pressure = 1e5 * jnp.ones((n, n, n), dtype=jnp.float_)
     temperature = 290.0 * jnp.ones_like(pressure)
     molecules = 1e24 * jnp.ones_like(pressure)
 
@@ -195,7 +193,7 @@ class RRTMOpticsTest(parameterized.TestCase):
     """Check the lw optical depth, albedo, and asymmetry factor with clouds."""
     # SETUP
     n = 4
-    ones = jnp.ones((n, n, n), dtype=jnp.float32)
+    ones = jnp.ones((n, n, n), dtype=jnp.float_)
 
     self.mock_major_optical_depth_fn.return_value = 0.5 * ones
     self.mock_minor_optical_depth_fn.return_value = 0.2 * ones
@@ -205,7 +203,7 @@ class RRTMOpticsTest(parameterized.TestCase):
         'asymmetry_factor': 0.12 * ones,
     }
 
-    pressure = 1e5 * jnp.ones((n, n, n), dtype=jnp.float32)
+    pressure = 1e5 * jnp.ones((n, n, n), dtype=jnp.float_)
     temperature = 290.0 * jnp.ones_like(pressure)
     molecules = 1e24 * jnp.ones_like(pressure)
     cloud_r_eff_liq = 1e-5 * jnp.ones_like(pressure)
@@ -242,7 +240,7 @@ class RRTMOpticsTest(parameterized.TestCase):
     """Checks the computed sw optical depth, albedo, and asymmetry factor."""
     # SETUP
     n = 4
-    ones = jnp.ones((n, n, n), dtype=jnp.float32)
+    ones = jnp.ones((n, n, n), dtype=jnp.float_)
 
     self.mock_rayleigh_optical_depth_fn.return_value = 0.1 * ones
     self.mock_major_optical_depth_fn.return_value = 0.6 * ones
@@ -286,7 +284,7 @@ class RRTMOpticsTest(parameterized.TestCase):
     """Checks the sw optical depth, albedo, and asymmetry factor with clouds."""
     # SETUP
     n = 4
-    ones = jnp.ones((n, n, n), dtype=jnp.float32)
+    ones = jnp.ones((n, n, n), dtype=jnp.float_)
 
     self.mock_rayleigh_optical_depth_fn.return_value = 0.1 * ones
     self.mock_major_optical_depth_fn.return_value = 0.6 * ones
@@ -370,7 +368,7 @@ class RRTMOpticsTest(parameterized.TestCase):
 
     temperature = jnp.array(
         [430.0, 400.0, 370.0, 340.0, 310.0, 280.0, 250.0, 220.0, 190.0],
-        dtype=jnp.float32,
+        dtype=jnp.float_,
     )
     temperature = test_util.convert_to_3d_array_and_tile(
         temperature, dim=2, num_repeats=n
@@ -378,7 +376,7 @@ class RRTMOpticsTest(parameterized.TestCase):
     pressure = 1e5 * jnp.ones_like(temperature)
     vmr_fields = {1: 1.2e-3 * jnp.ones_like(temperature)}
 
-    sfc_temperature = 440.0 * jnp.ones((n, n), dtype=jnp.float32)
+    sfc_temperature = 440.0 * jnp.ones((n, n), dtype=jnp.float_)
 
     # ACTION
     output = self.rrtm_lib.compute_planck_sources(
@@ -427,7 +425,7 @@ class RRTMOpticsTest(parameterized.TestCase):
     self.assertEqual(self.rrtm_lib.n_gpt_sw, 224)
 
 
-class GrayAtmosphereOpticsTest(parameterized.TestCase):
+class GrayAtmosphereOpticsTest(unittest.TestCase):
 
   def test_compute_optical_properties_gray_atmosphere(self):
     """Checks gray atmosphere optical depth, albedo, and asymmetry factor."""
@@ -508,7 +506,7 @@ class GrayAtmosphereOpticsTest(parameterized.TestCase):
     nx = ny = n = 4
     temperature = jnp.array(
         [430.0, 400.0, 370.0, 340.0, 310.0, 280.0, 250.0, 220.0, 190.0],
-        dtype=jnp.float32,
+        dtype=jnp.float_,
     )
 
     # Convert from 1D to 3D array.
@@ -516,7 +514,7 @@ class GrayAtmosphereOpticsTest(parameterized.TestCase):
         temperature, dim=2, num_repeats=n
     )
 
-    sfc_temperature = 350.0 * jnp.ones((nx, ny), dtype=jnp.float32)
+    sfc_temperature = 350.0 * jnp.ones((nx, ny), dtype=jnp.float_)
 
     # Using gray atmosphere parameters:
     # {'p0': 1e5, 'alpha': 3.5, 'd0_lw': 5.5536, 'd0_sw': 0.22}.
@@ -569,4 +567,4 @@ class GrayAtmosphereOpticsTest(parameterized.TestCase):
 
 
 if __name__ == '__main__':
-  absltest.main()
+  unittest.main()

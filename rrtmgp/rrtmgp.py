@@ -131,6 +131,10 @@ class RRTMGP:
       Optional keys depending on config:
         'rad_heat_sw_3d': The net shortwave radiative heating rate [K/s].
         'rad_heat_lw_3d': The net longwave radiative heating rate [K/s].
+        'sw_flux_up_full': Full shortwave upward flux profile [W/m²]
+        'sw_flux_down_full': Full shortwave downward flux profile [W/m²]
+        'lw_flux_up_full': Full longwave upward flux profile [W/m²]
+        'lw_flux_down_full': Full longwave downward flux profile [W/m²]
     """
     # Temperature may have NaNs in the halos (this is intentional).  These NaNs
     # cause problems later on, so fill in the halo values with linear
@@ -225,6 +229,12 @@ class RRTMGP:
     sw_flux_up = sw_fluxes['flux_up']
     hw = 1  # halo width.
 
+    # Add full flux profiles (remove surface halos)
+    output['sw_flux_up_full'] = sw_flux_up[:, :, hw:]  # Full profile (..., nlev+1)
+    output['sw_flux_down_full'] = sw_flux_down[:, :, hw:]  # Full profile (..., nlev+1)
+    output['lw_flux_up_full'] = lw_flux_up[:, :, hw:]  # Full profile (..., nlev+1)
+    output['lw_flux_down_full'] = lw_flux_down[:, :, hw:]  # Full profile (..., nlev+1)
+
     # 2D diagnostics
     if (v := 'surf_lw_flux_down_2d_xy') in self._diagnostic_fields:
       output[v] = lw_flux_down[:, :, hw]
@@ -295,6 +305,13 @@ class RRTMGP:
       lw_flux_up_clearsky = lw_fluxes_clearsky['flux_up']
       sw_flux_down_clearsky = sw_fluxes_clearsky['flux_down']
       sw_flux_up_clearsky = sw_fluxes_clearsky['flux_up']
+
+      # Add clear-sky full flux profiles (remove surface halos)
+      output['sw_flux_up_clearsky_full'] = sw_flux_up_clearsky[:, :, hw:]  # Full profile (..., nlev+1)
+      output['sw_flux_down_clearsky_full'] = sw_flux_down_clearsky[:, :, hw:]  # Full profile (..., nlev+1)
+      output['lw_flux_up_clearsky_full'] = lw_flux_up_clearsky[:, :, hw:]  # Full profile (..., nlev+1)
+      output['lw_flux_down_clearsky_full'] = lw_flux_down_clearsky[:, :, hw:]  # Full profile (..., nlev+1)
+
       # 2D diagnostics
       if (v := 'surf_lw_flux_down_clearsky_2d_xy') in self._diagnostic_fields:
         output[v] = lw_flux_down_clearsky[:, :, hw]

@@ -103,7 +103,7 @@ def _rt_denominator_diffuse(gamma1: Array, gamma2: Array, tau: Array) -> Array:
 
 
 def _rt_denominator_direct(
-    gamma1: Array, gamma2: Array, tau: Array, ssa: Array, zenith: float
+    gamma1: Array, gamma2: Array, tau: Array, ssa: Array, zenith: float | Array
 ) -> Array:
   """Shared denominator of direct reflectance and transmittance functions."""
   k = _k_fn(gamma1, gamma2)
@@ -126,15 +126,15 @@ def _direct_reflectance(
     alpha2: Array,
     tau: Array,
     ssa: Array,
-    zenith: float,
+    zenith: float | Array,
 ) -> Array:
   """Direct solar radiation reflectance (equation 14 of Meador and Weaver)."""
   k = _k_fn(gamma1, gamma2)
   denom = _rt_denominator_direct(gamma1, gamma2, tau, ssa, zenith)
-  k_mu = k * math.cos(zenith)
+  k_mu = k * jnp.cos(zenith)
 
   # Transmittance of direct, unscattered beam.
-  t0 = jnp.exp(-tau / math.cos(zenith))
+  t0 = jnp.exp(-tau / jnp.cos(zenith))
 
   # Equation 14 of Meador and Weaver (1980), multiplying top and bottom by
   # exp(-k*tau) and rearranging to avoid division by 0.
@@ -154,16 +154,16 @@ def _direct_transmittance(
     alpha1: Array,
     tau: Array,
     ssa: Array,
-    zenith: float,
+    zenith: float | Array,
 ) -> Array:
   """Direct solar radiation transmittance (equation 15 of Meador and Weaver)."""
   k = _k_fn(gamma1, gamma2)
   denom = _rt_denominator_direct(gamma1, gamma2, tau, ssa, zenith)
-  k_mu = k * math.cos(zenith)
+  k_mu = k * jnp.cos(zenith)
   k_y4 = k * gamma4
 
   # Transmittance of direct, unscattered beam.
-  t0 = jnp.exp(-tau / math.cos(zenith))
+  t0 = jnp.exp(-tau / jnp.cos(zenith))
 
   exp_minusktau = jnp.exp(-k * tau)
   exp_minus2ktau = jnp.exp(-2 * k * tau)
@@ -290,7 +290,7 @@ def lw_cell_source_and_properties(
 
 
 def sw_cell_properties(
-    zenith: float, optical_depth: Array, ssa: Array, asymmetry_factor: Array
+    zenith: float | Array, optical_depth: Array, ssa: Array, asymmetry_factor: Array
 ) -> StatesMap:
   """Compute shortwave reflectance and transmittance.
 
@@ -315,7 +315,7 @@ def sw_cell_properties(
   g = asymmetry_factor
   gamma1 = 0.25 * (8 - ssa * (5 + 3 * g))
   gamma2 = 0.25 * 3 * ssa * (1 - g)
-  gamma3 = 0.25 * (2 - 3 * math.cos(zenith) * g)
+  gamma3 = 0.25 * (2 - 3 * jnp.cos(zenith) * g)
   gamma4 = 1 - gamma3
   alpha1 = gamma1 * gamma4 + gamma2 * gamma3
   alpha2 = gamma1 * gamma3 + gamma2 * gamma4
@@ -338,7 +338,7 @@ def sw_cell_properties(
   # cell, or penetrate through but be scattered on the way.
 
   # Direct transmittance.
-  t0 = jnp.exp(-optical_depth / math.cos(zenith))
+  t0 = jnp.exp(-optical_depth / jnp.cos(zenith))
   r_dir = jnp.clip(r_dir_unconstrained, 0, 1 - t0)
   t_dir = jnp.clip(t_dir_unconstrained, 0, 1 - t0 - r_dir)
 
@@ -356,7 +356,7 @@ def sw_cell_source(
     optical_depth: Array,
     toa_flux: Array,
     sfc_albedo_direct: Array,
-    zenith: float,
+    zenith: float | Array,
     use_scan: bool = False,
 ) -> StatesMap:
   """Compute the monochromatic shortwave direct-beam flux and diffuse source.
@@ -380,8 +380,8 @@ def sw_cell_source(
       'sfc_src': A 2D field for the shortwave source emanating from the surface.
   """
   # Transmittance of direct, unscattered beam.
-  t_noscat = jnp.exp(-optical_depth / math.cos(zenith))
-  mu = math.cos(zenith)
+  t_noscat = jnp.exp(-optical_depth / jnp.cos(zenith))
+  mu = jnp.cos(zenith)
 
   # The vertical component of incident flux at the top boundary.
   flux_down_direct_bc = toa_flux * mu

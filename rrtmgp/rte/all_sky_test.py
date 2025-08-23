@@ -15,8 +15,9 @@
 import functools
 from typing import TypeAlias
 
-from absl.testing import absltest
-from absl.testing import parameterized
+import unittest
+from parameterized import parameterized
+from itertools import product
 from pathlib import Path
 import jax
 import jax.numpy as jnp
@@ -187,12 +188,12 @@ def _air_molecules_per_area(p_bottom: Array, vmr_h2o: Array) -> Array:
   return -(dp / constants.G) * constants.AVOGADRO / mol_m_air
 
 
-class AllSkyTest(parameterized.TestCase):
+class AllSkyTest(unittest.TestCase):
 
-  @parameterized.product(
-      use_compact_lookup=[True, False],
-      use_scan=[True, False],
-  )
+  @parameterized.expand([
+    (use_compact, use_scan)
+    for use_compact, use_scan in product([True, False], [True, False])
+  ])
   def test_two_stream_solver_with_cloudy_sky(
       self, use_compact_lookup: bool, use_scan: bool
   ):
@@ -337,5 +338,4 @@ class AllSkyTest(parameterized.TestCase):
 
 
 if __name__ == '__main__':
-  jax.config.update('jax_enable_x64', True)
-  absltest.main()
+  unittest.main()

@@ -331,9 +331,7 @@ def solve_sw(
   flux_keys = ['flux_up', 'flux_down', 'flux_net']
   fluxes_0 = {key: jnp.zeros_like(temperature) for key in flux_keys}
 
-  if zenith >= 0.5 * np.pi:
-    return fluxes_0
-  else:
+  def _compute_fluxes(_):
     fluxes = jax.lax.fori_loop(0, optics_lib.n_gpt_sw, step_fn, fluxes_0)
     # There are problematic values for the fluxes at the top boundary (the top
     # halo), so fix using a quadratic polynomial to evaluate the flux at the top
@@ -341,6 +339,14 @@ def solve_sw(
     for key in flux_keys:
       fluxes[key] = _replace_top_flux(fluxes[key])
     return fluxes
+
+  # Use JAX control flow to avoid Python boolean conversion on tracers
+  return jax.lax.cond(
+      zenith >= 0.5 * jnp.pi,
+      lambda _: fluxes_0,
+      _compute_fluxes,
+      operand=None,
+  )
 
 
 def compute_heating_rate(
